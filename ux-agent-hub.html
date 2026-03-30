@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UX Agent Hub</title>
+<style>
+:root {
+  --disc:#4F46E5; --del:#0891B2; --ai:#7C3AED; --val:#059669; --success:#16A34A;
+  --bg:#F8FAFC; --surface:#FFFFFF; --card:#FFFFFF; --card-hover:#F1F5F9;
+  --border:#E2E8F0; --text:#1E293B; --muted:#64748B; --dim:#94A3B8;
+  --glow-disc:rgba(79,70,229,.08); --glow-del:rgba(8,145,178,.08);
+  --glow-ai:rgba(124,58,237,.08); --glow-val:rgba(5,150,105,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;}
+
+/* Header */
+.header{padding:32px 40px 24px;border-bottom:1px solid var(--border);}
+.header-top{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+.hub-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--ai),var(--disc));display:flex;align-items:center;justify-content:center;font-size:20px;color:white;}
+.header h1{font-size:24px;font-weight:700;letter-spacing:-.3px;}
+.header h1 span{color:var(--ai);font-weight:800;}
+.header p{color:var(--muted);font-size:14px;max-width:680px;}
+
+/* Pipeline mini-bar */
+.pipeline-bar{display:flex;gap:2px;padding:16px 40px;border-bottom:1px solid var(--border);overflow-x:auto;}
+.pipe-dot{flex:1;min-width:0;height:4px;border-radius:2px;background:var(--border);cursor:pointer;transition:all .2s;}
+.pipe-dot:hover{opacity:.8;transform:scaleY(2);}
+.pipe-dot.active{transform:scaleY(2);}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:260px 1fr 300px;min-height:calc(100vh - 140px);}
+@media(max-width:1200px){.layout{grid-template-columns:260px 1fr;}.right-panel{display:none;}}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}.right-panel{display:none;}}
+
+/* Agent sidebar */
+.sidebar{border-right:1px solid var(--border);padding:16px 0;overflow-y:auto;background:#FFFFFF;}
+.sidebar-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:12px 20px 8px;}
+.agent-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 20px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;border-left:3px solid transparent;}
+.agent-btn:hover{background:rgba(0,0,0,.03);color:var(--text);}
+.agent-btn.active{background:rgba(0,0,0,.04);color:var(--text);border-left-color:var(--ai);}
+.agent-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.agent-btn-text .agent-name{font-weight:600;display:block;}
+.agent-btn-text .agent-lane{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.agent-status{margin-left:auto;width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* Main content area */
+.main-content{padding:28px 36px;overflow-y:auto;}
+
+/* Agent header */
+.agent-header{margin-bottom:24px;}
+.agent-header-row{display:flex;align-items:center;gap:16px;margin-bottom:12px;}
+.agent-header-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;}
+.agent-header h2{font-size:22px;font-weight:700;}
+.agent-header .agent-phase{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.6;}
+.agent-header p{color:var(--muted);font-size:14px;max-width:600px;}
+
+/* Capabilities */
+.capabilities{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:24px;}
+.cap-card{padding:12px 14px;border-radius:10px;background:rgba(0,0,0,.02);border:1px solid var(--border);font-size:13px;}
+.cap-card strong{display:block;margin-bottom:2px;font-size:12px;}
+.cap-card p{color:var(--muted);font-size:12px;margin:0;line-height:1.4;}
+
+/* Action panel */
+.action-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.action-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.action-header h3{font-size:14px;font-weight:700;}
+.action-header .action-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;}
+.action-body{padding:20px;}
+
+/* Input tabs */
+.input-tabs{display:flex;border-bottom:1px solid var(--border);}
+.input-tab{flex:1;padding:10px 14px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;border:none;background:none;color:var(--dim);border-bottom:2px solid transparent;transition:all .15s;}
+.input-tab:hover{color:var(--text);background:rgba(0,0,0,.02);}
+.input-tab.active{color:var(--text);border-bottom-color:currentColor;}
+.input-tab .tab-icon{display:block;font-size:18px;margin-bottom:2px;}
+
+.input-panel{display:none;padding:20px;}
+.input-panel.active{display:block;}
+.input-panel h4{font-size:14px;font-weight:600;margin-bottom:6px;}
+.input-panel p{font-size:13px;color:var(--muted);margin-bottom:10px;}
+
+/* Form elements */
+textarea,input[type="url"],input[type="text"]{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#FFFFFF;color:var(--text);font-family:inherit;font-size:13px;resize:vertical;transition:border-color .15s;}
+textarea:focus,input:focus{outline:none;border-color:var(--ai);}
+textarea{min-height:120px;}
+.helper{font-size:11px;color:var(--dim);margin-top:4px;}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+.btn-primary{background:var(--ai);color:white;}
+.btn-primary:hover{filter:brightness(1.15);}
+.btn-ghost{background:#F1F5F9;color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{background:#E2E8F0;color:var(--text);}
+
+/* Template preview */
+.template-preview{margin-top:16px;}
+.tpl-row{padding:8px 12px;border-radius:6px;border:1px solid var(--border);margin-bottom:4px;font-size:12px;background:rgba(0,0,0,.02);}
+.tpl-row strong{color:var(--text);}
+.tpl-row .tpl-desc{color:var(--dim);font-size:11px;margin-top:1px;}
+.tpl-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;margin-left:6px;text-transform:uppercase;vertical-align:middle;}
+
+/* Log */
+.log-section{margin-top:16px;}
+.log-section h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);margin-bottom:8px;}
+.log-entry{padding:10px 14px;border-left:3px solid var(--border);margin-bottom:8px;font-size:13px;background:rgba(0,0,0,.02);border-radius:0 8px 8px 0;}
+.log-entry.success{border-left-color:var(--val);}
+.log-entry.processing{border-left-color:var(--ai);}
+.log-entry.success{border-left-color:var(--success);}
+.log-entry.info{border-left-color:var(--del);}
+.log-time{font-size:10px;color:var(--dim);font-weight:600;}
+
+/* Result area */
+.result-area{display:none;padding:20px;border-top:1px solid var(--border);}
+.result-area.visible{display:block;}
+.result-area h4{font-size:14px;font-weight:700;margin-bottom:8px;}
+.result-area textarea{min-height:180px;font-family:monospace;font-size:11px;background:#F8FAFC;}
+
+/* Info callout */
+.callout{padding:12px 14px;border-radius:8px;font-size:12px;border-left:3px solid;margin:10px 0;background:rgba(0,0,0,.02);}
+
+/* Sidebar reference */
+.ref-section{padding:0 20px;margin-top:8px;}
+.ref-toggle{display:flex;align-items:center;gap:6px;width:100%;padding:8px 0;border:none;background:none;color:var(--dim);font-size:11px;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;}
+.ref-toggle:hover{color:var(--muted);}
+.ref-list{display:none;padding-bottom:8px;}
+.ref-list.open{display:block;}
+.ref-item{padding:4px 0;font-size:12px;color:var(--muted);}
+.ref-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px;}
+
+/* Right panel */
+.right-panel{border-left:1px solid var(--border);background:#FFFFFF;padding:20px 0;overflow-y:auto;}
+.right-panel-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:0 16px 8px;}
+.accordion{border-bottom:1px solid var(--border);}
+.accordion:last-child{border-bottom:none;}
+.accordion-btn{display:flex;align-items:center;gap:8px;width:100%;padding:10px 16px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);text-align:left;transition:background .1s;}
+.accordion-btn:hover{background:rgba(0,0,0,.02);}
+.accordion-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.accordion-arrow{margin-left:auto;font-size:10px;color:var(--dim);transition:transform .2s;flex-shrink:0;}
+.accordion-btn.open .accordion-arrow{transform:rotate(180deg);}
+.accordion-body{display:none;padding:0 16px 12px 32px;font-size:12px;color:var(--muted);line-height:1.5;}
+.accordion-body.open{display:block;}
+.accordion-body a{color:var(--ai);text-decoration:none;font-size:11px;font-weight:600;}
+.accordion-body a:hover{text-decoration:underline;}
+.right-divider{height:1px;background:var(--border);margin:12px 16px;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px;}
+
+@media(max-width:900px){.header,.main-content{padding-left:20px;padding-right:20px;}.sidebar{border-right:none;border-bottom:1px solid var(--border);padding:8px 0;}.layout{min-height:auto;}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="hub-icon">⚡</div>
+    <h1>UX <span>Agent</span> Hub</h1>
+  </div>
+  <p>Eight specialised AI agents that power the UX designer's workflow — from discovery research through validated solution delivery. Deploy an agent to get started.</p>
+</div>
+
+<!-- PIPELINE MINI-BAR -->
+<div class="pipeline-bar" id="pipelineBar"></div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR: Agent list -->
+  <div class="sidebar">
+    <div class="sidebar-label">Agents</div>
+    <div id="agentList"></div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content" id="mainContent"></div>
+
+  <!-- RIGHT PANEL: JTBD & Missions -->
+  <div class="right-panel">
+    <div class="right-panel-label" style="display:flex;align-items:center;gap:6px;">
+      <span>⭐</span> Jobs to Be Done
+      <a href="https://e-conomic.slite.com/app/docs/wCYzIJKe_leay1" target="_blank" style="margin-left:auto;font-size:10px;color:var(--dim);text-decoration:none;">Open ↗</a>
+    </div>
+    <div id="jtbdAccordions"></div>
+
+    <div class="right-divider"></div>
+
+    <div class="right-panel-label" style="display:flex;align-items:center;gap:6px;">
+      <span>🎯</span> Missions 2026
+      <a href="https://e-conomic.slite.com/app/docs/O2Xvwt4EwAqCuR" target="_blank" style="margin-left:auto;font-size:10px;color:var(--dim);text-decoration:none;">Open ↗</a>
+    </div>
+    <div id="missionAccordions"></div>
+  </div>
+
+</div>
+
+<script>
+// ──────────────────── DATA ────────────────────
+const jobs = [
+  {name:'Collect Documents',color:'#4F46E5',id:'dUi2r6-ahwPUMj',lead:'Mikkel',
+   desc:'When I\'m in e-conomic trying to bring my client\'s books up to date, I want all necessary documents to be in place, so I can avoid time-consuming back-and-forth communication and complete the bookings without interruption.'},
+  {name:'Handle Bank',color:'#0891B2',id:'BE5w1numFMjCTX',lead:'Sara',
+   desc:'I want to book and reconcile all postings on the bank with minimal work.'},
+  {name:'Supplier Invoices',color:'#7C3AED',id:'SkWIiElP9ewIGc',lead:'Nina',
+   desc:'When my client has received a supplier invoice, I want to ensure that it will be booked and paid within the due date with minimal work.'},
+  {name:'Prioritise Tasks',color:'#059669',id:'2DOFTEvXDC1SEw',lead:'Emma',
+   desc:'I want to easily identify which client to focus on first and drill down into each client\'s details so I can prioritize the most important tasks and never miss a deadline.'},
+  {name:'Overview & Control',color:'#D97706',id:'qwDq5Cx62XC-zn',lead:'Carl',
+   desc:'I want to summarize relevant bookkeeping data so I can finally finish and reconcile all balance accounts. If I find errors, I want it to be easy to correct them.'},
+  {name:'Advice About Anomalies',color:'#DC2626',id:'RWUjegEtUuo8Us',lead:'—',
+   desc:'When something unusual happens in my client\'s accounting, I want to be aware of it right away so I can research, handle, and guide them before it negatively impacts their business.'},
+  {name:'Handle Payroll',color:'#2563EB',id:'tPdLJMxaoJWXuh',lead:'Lærke/Olivia',
+   desc:'I want to handle payroll for my clients efficiently and accurately.'},
+  {name:'Period Closing',color:'#9333EA',id:'rZ_CET2TfnVQWG',lead:'Sara',
+   desc:'When making period closings, I want to summarize relevant bookkeeping data so I can finally finish and reconcile all balance accounts. If I find errors, I want it to be easy to correct them.'},
+  {name:'Business Advisory',color:'#0D9488',id:'i8PLvYpiRiULoA',lead:'Carl',
+   desc:'I want to advise my clients about how they should manage their business more efficiently, stay compliant and implement digital workflows.'},
+  {name:'Simple accounting on Mobile',color:'#EA580C',id:'wKpP-8piqqSvlX',lead:'Dany',
+   desc:'When I\'m away from my desk, I want to stay on top of urgent client matters and approve time-sensitive actions — so nothing is delayed just because I\'m not at my computer.'},
+  {name:'Trusted Platform',color:'#64748B',id:'Lh-_Tgbl6BDDaZ',lead:'Daniele',
+   desc:'I want to trust that the platform I rely on every day is secure, reliable, and compliant — so I can focus on my clients without worrying about data loss, downtime, or regulatory risk.'}
+];
+const missions = [
+  {name:'Functional Automation',icon:'⚙️',color:'#0891B2',id:'rL_YP9jes6qVnH',
+   desc:'Deeply embed actionable AI-functionality and smart defaults into core Jobs to Be Done throughout our application, enabling mass-market AOs with tools to work effortlessly. This is the engine of our product\'s efficiency and user satisfaction.',
+   outcome:'Directly impacting our main strategic goal of saving AOs 50% of time spent on core bookkeeping tasks.'},
+  {name:'Agentic Automation',icon:'🤖',color:'#7C3AED',id:'ADlV1t-Po9Ie1o',
+   desc:'Introduce the next generation of accounting products through agentic automation of our core JTBD. Building the first accounting agents on e-conomic, empowering forward-looking AOs with a digital workforce.',
+   outcome:'Directly impacting time spent on core bookkeeping reduced by 50%.'},
+  {name:'Trusted Platform',icon:'🤝',color:'#4F46E5',id:'7M-oAAd97Ny9Hd',
+   desc:'Remain the most trusted solution towards AOs by strengthening platform APIs, data, user access and security in an agentic future. Ensure mobile supports JTBD automation growth, and stay ahead of compliance through collaboration with the Danish Government.',
+   outcome:'Supporting 50% time saved for AOs and essential KPIs: Signups, Retention, Security Index, Compliance.'},
+  {name:'Adjacent Growth',icon:'📈',color:'#059669',id:'ARPs43Vd03BdTL',
+   desc:'Succeed with growth outside our core by commercialising Payroll and Cards. Targeting +200k payslips and +150m DKK transactional volume with CES of +6 in 2026.',
+   outcome:'Expanding into new territories to pursue new growth opportunities beyond core accounting.'}
+];
+
+const agents = [
+  {
+    id:'discover', num:'01', name:'Discovery Agent', icon:'🔍',
+    lane:'Discovery', laneColor:'var(--disc)', bgGlow:'var(--glow-disc)',
+    tagline:'Creates discovery items in your backlog — choose a JTBD, describe your research question, and the agent adds it to the All Discovery collection',
+    capabilities:[
+      {title:'JTBD Selection',desc:'Pick from your 11 Jobs to Be Done to scope the research area'},
+      {title:'Research Scoping',desc:'Define what you want to learn — the agent structures it as a discovery item'},
+      {title:'Method Suggestion',desc:'Recommends a research method (interview, diary study, data analysis, usability test, survey)'},
+      {title:'Backlog Creation',desc:'Adds the item to All Discovery in Slite with Job, Method, Status, and Owner'}
+    ],
+    inputType:'discover'
+  },
+  {
+    id:'opportunity', num:'02', name:'Opportunity Agent', icon:'💡',
+    lane:'Discovery', laneColor:'var(--disc)', bgGlow:'var(--glow-disc)',
+    tagline:'Evaluates research inputs against your JTBD framework and missions to create validated opportunities',
+    capabilities:[
+      {title:'Research Analysis',desc:'Parse interview transcripts and research notes to extract customer needs, pain points, and jobs'},
+      {title:'JTBD Mapping',desc:'Map insights to your 11 Jobs to Be Done with confidence scoring'},
+      {title:'Mission Alignment',desc:'Assess strategic fit against 2026 missions'},
+      {title:'Opportunity Creation',desc:'Draft and push validated opportunities to your Slite backlog'}
+    ],
+    inputType:'opportunity'
+  },
+  {
+    id:'pitch', num:'03', name:'Pitch Agent', icon:'📋',
+    lane:'Delivery', laneColor:'var(--del)', bgGlow:'var(--glow-del)',
+    tagline:'Generates delivery pitches from validated opportunities using your Pitch Template v3.0',
+    capabilities:[
+      {title:'Opportunity Reading',desc:'Pull full context from your Slite opportunity backlog'},
+      {title:'Pitch Generation',desc:'Fill all 5 template sections: Problem, Value, Evidence, Success, Sizing'},
+      {title:'Slite Integration',desc:'Save to Pitches collection with status "Up for review" and metadata'},
+      {title:'Chain Tracing',desc:'Links back to original JTBD and mission for full context'}
+    ],
+    inputType:'pitch'
+  },
+  {
+    id:'brief', num:'04', name:'Brief Agent', icon:'✏️',
+    lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
+    tagline:'Creates Design Brief 2.1 from pitch + opportunity, scoping the problem and preparing LLM context',
+    capabilities:[
+      {title:'Full Chain Reading',desc:'Trace pitch → opportunity → job → mission for complete context'},
+      {title:'Brief Generation',desc:'Fill Design Brief 2.1 template: Foundations, Core Problem, JTBD, Journey, Behavior Shift, Risks, Outcomes, Scope'},
+      {title:'Gap Flagging',desc:'Mark sections needing your input with [NEEDS INPUT]'},
+      {title:'LLM Context Prep',desc:'Structure the brief to double as AI generation prompt'}
+    ],
+    inputType:'brief'
+  },
+  {
+    id:'design', num:'05', name:'Design Agent', icon:'🤖',
+    lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
+    tagline:'Generates solution proposals using the Adesy Web Components design system as structured context',
+    capabilities:[
+      {title:'Design System Awareness',desc:'Knows every Adesy component, variant, token, and layout rule'},
+      {title:'Multi-Solution Generation',desc:'Produces multiple alternatives varying on key dimensions'},
+      {title:'Figma Integration',desc:'Can create wireframe-level designs via Figma MCP'},
+      {title:'Code-Ready Output',desc:'References Storybook-available components for near-instant handoff'}
+    ],
+    inputType:'design'
+  },
+  {
+    id:'validate', num:'06', name:'Validation Agent', icon:'🧪',
+    lane:'Validation', laneColor:'var(--val)', bgGlow:'var(--glow-val)',
+    tagline:'Helps structure customer validation — test design, participant selection, and feedback capture',
+    capabilities:[
+      {title:'Test Plan Generation',desc:'Create usability test scripts, concept test guides, or preference tests'},
+      {title:'Participant Criteria',desc:'Define screening criteria based on JTBD user segments'},
+      {title:'Feedback Structuring',desc:'Template for capturing what works, what doesn\'t, and why'},
+      {title:'Evidence Synthesis',desc:'Consolidate findings into actionable design decisions'}
+    ],
+    inputType:'validate'
+  },
+  {
+    id:'iterate', num:'07', name:'Iteration Agent', icon:'🔄',
+    lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
+    tagline:'Feeds validation learnings back into the design brief and regenerates refined solutions',
+    capabilities:[
+      {title:'Feedback Integration',desc:'Structure customer feedback as new constraints and revised criteria'},
+      {title:'Brief Update',desc:'Patch the design brief with validation learnings'},
+      {title:'Regeneration',desc:'Ask Design Agent to produce updated solutions incorporating feedback'},
+      {title:'Comparison',desc:'Evaluate new vs. previous solutions against evidence'}
+    ],
+    inputType:'iterate'
+  },
+  {
+    id:'solution', num:'08', name:'Solution Agent', icon:'✅',
+    lane:'Delivery', laneColor:'var(--del)', bgGlow:'var(--glow-del)',
+    tagline:'Packages the validated solution into a delivery-ready specification with component mappings',
+    capabilities:[
+      {title:'Spec Generation',desc:'Create interaction specs: states, transitions, error handling, edge cases'},
+      {title:'Component Mapping',desc:'Map to exact Adesy Web Components with variant properties'},
+      {title:'Token Documentation',desc:'List all color, typography, and spacing tokens applied'},
+      {title:'Validation Summary',desc:'Attach customer testing evidence and confidence scores'}
+    ],
+    inputType:'solution'
+  }
+];
+
+let currentAgent = 0;
+
+// ──────────────────── RENDER ────────────────────
+function renderPipeline() {
+  const bar = document.getElementById('pipelineBar');
+  bar.innerHTML = agents.map((a,i) =>
+    `<div class="pipe-dot ${i===currentAgent?'active':''}" style="${i===currentAgent?'background:'+a.laneColor:''}" onclick="selectAgent(${i})" title="${a.name}"></div>`
+  ).join('');
+}
+
+function renderSidebar() {
+  const el = document.getElementById('agentList');
+  el.innerHTML = agents.map((a,i) => `
+    <button class="agent-btn ${i===currentAgent?'active':''}" onclick="selectAgent(${i})" style="${i===currentAgent?'border-left-color:'+a.laneColor:''}">
+      <div class="agent-icon" style="background:${a.bgGlow}">${a.icon}</div>
+      <div class="agent-btn-text">
+        <span class="agent-name">${a.name}</span>
+        <span class="agent-lane" style="color:${a.laneColor}">${a.lane}</span>
+      </div>
+    </button>
+  `).join('');
+}
+
+function renderAccordions() {
+  document.getElementById('jtbdAccordions').innerHTML = jobs.map((j,i) => `
+    <div class="accordion">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        <span class="accordion-dot" style="background:${j.color}"></span>
+        ${j.name}
+        <span class="accordion-arrow">▾</span>
+      </button>
+      <div class="accordion-body">
+        <p style="margin-bottom:6px;font-style:italic;">"${j.desc}"</p>
+        <p style="font-size:11px;color:var(--dim);margin-bottom:4px;">Discovery lead: ${j.lead}</p>
+        <a href="https://e-conomic.slite.com/app/docs/${j.id}" target="_blank">View in Slite ↗</a>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('missionAccordions').innerHTML = missions.map(m => `
+    <div class="accordion">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        <span style="font-size:14px;flex-shrink:0;">${m.icon}</span>
+        ${m.name}
+        <span class="accordion-arrow">▾</span>
+      </button>
+      <div class="accordion-body">
+        <p style="margin-bottom:6px;">${m.desc}</p>
+        <p style="font-size:11px;color:var(--dim);margin-bottom:4px;"><strong>Outcome:</strong> ${m.outcome}</p>
+        <a href="https://e-conomic.slite.com/app/docs/${m.id}" target="_blank">View in Slite ↗</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleAccordion(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+
+function renderMain() {
+  const a = agents[currentAgent];
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `
+    <div class="agent-header">
+      <div class="agent-header-row">
+        <div class="agent-header-icon" style="background:${a.bgGlow}">${a.icon}</div>
+        <div>
+          <div class="agent-phase" style="color:${a.laneColor}">Agent ${a.num} · ${a.lane}</div>
+          <h2>${a.name}</h2>
+        </div>
+      </div>
+      <p>${a.tagline}</p>
+    </div>
+
+    <div class="capabilities">
+      ${a.capabilities.map(c => `
+        <div class="cap-card">
+          <strong>${c.title}</strong>
+          <p>${c.desc}</p>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="action-panel">
+      <div class="action-header">
+        <h3>Deploy Agent</h3>
+        <span class="action-badge" style="background:${a.bgGlow};color:${a.laneColor}">Ready</span>
+      </div>
+      ${getInputHTML(a)}
+      <div class="result-area" id="resultArea-${a.id}"></div>
+    </div>
+
+    <div class="log-section">
+      <h4>Activity Log</h4>
+      <div id="logArea-${a.id}">
+        <div style="text-align:center;padding:20px;color:var(--dim);font-size:13px;">No activity yet. Deploy the agent above to get started.</div>
+      </div>
+    </div>
+  `;
+}
+
+function getInputHTML(agent) {
+  switch(agent.inputType) {
+    case 'discover': return `
+      <div class="action-body">
+        <h4>1. Choose a Job to Be Done</h4>
+        <p>Select the JTBD area you want to research.</p>
+        <select id="inp-discover-job" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface);color:var(--text);margin-bottom:16px;">
+          <option value="">— Select a Job —</option>
+          ${jobs.map(j => '<option value="'+j.name+'">'+j.name+'</option>').join('')}
+        </select>
+        <h4>2. What do you want to learn?</h4>
+        <p>Describe the research question or area you'd like to explore. The agent will create a discovery item and suggest a method.</p>
+        <textarea id="inp-discover-text" placeholder="e.g. How do accountants currently decide which client to work on first in the morning?"></textarea>
+        <div class="helper">Be specific about what you want to understand — who, what, why, how.</div>
+        <div class="template-preview">
+          <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Discovery Collection Fields</div>
+          <div class="tpl-row"><strong>📋 Title</strong><div class="tpl-desc">Research question (generated from your input)</div></div>
+          <div class="tpl-row"><strong>🏷️ Job</strong><div class="tpl-desc">Linked to the JTBD you selected</div></div>
+          <div class="tpl-row"><strong>🔬 Method</strong><div class="tpl-desc">Suggested: User interview, Data analysis, Diary study, Usability test, Survey</div></div>
+          <div class="tpl-row"><strong>📊 Status</strong><div class="tpl-desc">Auto-set to "Not started"</div></div>
+          <div class="tpl-row"><strong>🔗 Linked Opportunity</strong><div class="tpl-desc">Left empty — to be linked after research</div></div>
+        </div>
+        <div style="margin-top:12px;"><button class="btn btn-primary" style="background:var(--disc)" onclick="runDiscover()">🔍 Deploy Discovery Agent</button></div>
+      </div>`;
+
+    case 'opportunity': return `
+      <div class="action-body">
+        <h4>Paste interview transcript or research notes</h4>
+        <p>Include participant role, context, and direct quotes for best results. The agent will evaluate the input against your JTBD framework and missions.</p>
+        <textarea id="inp-doc" placeholder="Paste transcript or research notes here..."></textarea>
+        <div class="helper">Supports plain text from Word docs, Google Docs, or any text source.</div>
+        <div style="margin-top:12px;"><button class="btn btn-primary" style="background:var(--disc)" onclick="runOpportunity()">💡 Deploy Opportunity Agent</button></div>
+      </div>`;
+
+    case 'pitch': return `
+      <div class="action-body">
+        <h4>Link to Opportunity in Slite</h4>
+        <p>Paste the URL of a validated opportunity. The agent reads it and generates a pitch using your Pitch Template v3.0.</p>
+        <input type="url" id="inp-pitch-url" placeholder="https://e-conomic.slite.com/app/docs/...">
+        <div class="helper">Opportunity from your JTBD backlog</div>
+        <div class="template-preview">
+          <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Pitch Template v3.0</div>
+          <div class="tpl-row"><strong>🔥 Problem</strong> <div class="tpl-desc">Core user/business problem — no solutions</div></div>
+          <div class="tpl-row"><strong>💸 Business Value</strong> <div class="tpl-desc">ARPC, churn, new customers — be quantitative</div></div>
+          <div class="tpl-row"><strong>👀 Evidence</strong> <div class="tpl-desc">Data backing: Kubit, Datadog, research, interviews</div></div>
+          <div class="tpl-row"><strong>💪 Success Criteria</strong> <div class="tpl-desc">Expected change in behavior, metrics, or value</div></div>
+          <div class="tpl-row"><strong>⚙️ Sizing</strong> <div class="tpl-desc">Small / Medium / Large / XL + constraints</div></div>
+          <div class="callout" style="border-color:var(--del);color:var(--del);margin-top:8px;">Auto-set: Status → "Up for review" · Owner → Tobias Jensen · Size → from opportunity · Date → today</div>
+        </div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" style="background:var(--del)" onclick="runPitch()">📋 Deploy Pitch Agent</button></div>
+      </div>`;
+
+    case 'brief': return `
+      <div class="action-body">
+        <h4>Link to Pitch in Slite</h4>
+        <p>Paste the URL of an approved pitch. The agent traces back to the original opportunity and generates a full Design Brief 2.1.</p>
+        <input type="url" id="inp-brief-url" placeholder="https://e-conomic.slite.com/app/docs/...">
+        <div class="helper">Pitch from your Pitches collection</div>
+        <div class="template-preview">
+          <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Design Brief 2.1</div>
+          <div class="tpl-row"><strong>📋 Foundations</strong> <span class="tpl-badge" style="background:rgba(220,38,38,.15);color:#F87171;">DAY ONE</span><div class="tpl-desc">Core problem · Primary user & JTBD · Behavior shift · User journey · Success metric</div></div>
+          <div class="tpl-row"><strong>🎯 Core Problem</strong><div class="tpl-desc">What we're solving, why it matters, cost of not solving</div></div>
+          <div class="tpl-row"><strong>👤 User & JTBD</strong><div class="tpl-desc">Primary/secondary user, job, what goes wrong, impact</div></div>
+          <div class="tpl-row"><strong>🗺️ Journey Map</strong><div class="tpl-desc">Phases, goals, pain points, opportunities, edge cases</div></div>
+          <div class="tpl-row"><strong>🔄 Behavior Shift</strong><div class="tpl-desc">Current → desired, what we stop optimising for</div></div>
+          <div class="tpl-row"><strong>⚠️ Assumptions</strong><div class="tpl-desc">Top 3 with "what if wrong" and smallest test</div></div>
+          <div class="tpl-row"><strong>📊 Outcomes</strong><div class="tpl-desc">User/business outcome, primary metric, failure criteria</div></div>
+          <div class="tpl-row"><strong>⚙️ Scope</strong><div class="tpl-desc">In / Out of scope</div></div>
+          <div class="tpl-row"><strong>🎨 Design Direction</strong><div class="tpl-desc">Principles, strategic lens, references</div></div>
+          <div class="callout" style="border-color:var(--ai);color:var(--ai);margin-top:8px;">The brief IS the LLM prompt. Claude pre-fills from pitch + opportunity. Sections needing your input are flagged [NEEDS INPUT].</div>
+        </div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" onclick="runBrief()">✏️ Deploy Brief Agent</button></div>
+      </div>`;
+
+    case 'design': return `
+      <div class="action-body">
+        <h4>Link to Design Brief in Slite</h4>
+        <p>Paste the completed design brief. The agent uses it as context along with the Adesy Web Components design system to generate solution proposals.</p>
+        <input type="url" id="inp-design-url" placeholder="https://e-conomic.slite.com/app/docs/...">
+        <div class="helper">A completed Design Brief 2.1 with Foundations checklist done</div>
+        <div class="template-preview">
+          <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Design System Context</div>
+          <div class="tpl-row"><strong>🧩 Component Catalog</strong><div class="tpl-desc">All Adesy Web Components with variants and usage rules</div></div>
+          <div class="tpl-row"><strong>🎨 Design Tokens</strong><div class="tpl-desc">Color, typography, spacing from Adesy Design Tokens</div></div>
+          <div class="tpl-row"><strong>📐 Layout Rules</strong><div class="tpl-desc">Grid systems (Screen, Screen + Sidebar) and spacing</div></div>
+          <div class="tpl-row"><strong>📦 Storybook Flags</strong><div class="tpl-desc">What's implemented vs. Figma-only</div></div>
+          <div class="tpl-row"><strong>🔄 VUD Migration</strong><div class="tpl-desc">Legacy → modern component mappings</div></div>
+        </div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" onclick="runDesign()">🤖 Deploy Design Agent</button></div>
+      </div>`;
+
+    case 'validate': return `
+      <div class="action-body">
+        <h4>What would you like to validate?</h4>
+        <p>Describe the solution(s) to test, or paste a link to the design output. The agent will help you structure the validation approach.</p>
+        <textarea id="inp-validate-text" placeholder="Describe the solution to validate, or paste a Slite/Figma link..."></textarea>
+        <div class="template-preview">
+          <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Validation Options</div>
+          <div class="tpl-row"><strong>🧪 Usability Test</strong><div class="tpl-desc">Task-based testing with real users</div></div>
+          <div class="tpl-row"><strong>💡 Concept Test</strong><div class="tpl-desc">Present concepts to gauge understanding and appeal</div></div>
+          <div class="tpl-row"><strong>⚖️ Preference Test</strong><div class="tpl-desc">Compare alternatives to identify strongest solution</div></div>
+        </div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" style="background:var(--val)" onclick="runValidate()">🧪 Deploy Validation Agent</button></div>
+      </div>`;
+
+    case 'iterate': return `
+      <div class="action-body">
+        <h4>Customer Feedback</h4>
+        <p>Paste your structured validation findings. The agent updates the design brief and asks the Design Agent to regenerate solutions.</p>
+        <textarea id="inp-iterate-text" placeholder="Paste customer feedback, test results, or observations...&#10;&#10;Format: What worked · What didn't · Why · Specific quotes"></textarea>
+        <div style="margin-top:6px;">
+          <h4 style="font-size:12px;margin-top:12px;">Link to current Design Brief</h4>
+          <input type="url" id="inp-iterate-url" placeholder="https://e-conomic.slite.com/app/docs/..." style="margin-top:6px;">
+        </div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" onclick="runIterate()">🔄 Deploy Iteration Agent</button></div>
+      </div>`;
+
+    case 'solution': return `
+      <div class="action-body">
+        <h4>Link to validated Design Brief</h4>
+        <p>Paste the final design brief (post-validation). The agent packages everything into a delivery-ready solution scope with component mappings.</p>
+        <input type="url" id="inp-solution-url" placeholder="https://e-conomic.slite.com/app/docs/...">
+        <div class="helper">The brief should reflect all validation learnings</div>
+        <div style="margin-top:6px;">
+          <h4 style="font-size:12px;margin-top:12px;">Link to final Figma design (optional)</h4>
+          <input type="url" id="inp-solution-figma" placeholder="https://www.figma.com/..." style="margin-top:6px;">
+        </div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" style="background:var(--del)" onclick="runSolution()">✅ Deploy Solution Agent</button></div>
+      </div>`;
+  }
+}
+
+// ──────────────────── TAB SWITCHING ────────────────────
+function switchTab(btn, panelId) {
+  btn.closest('.input-tabs').querySelectorAll('.input-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.action-panel').querySelectorAll('.input-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+panelId).classList.add('active');
+}
+
+// ──────────────────── AGENT RUNNERS ────────────────────
+function getTime() { return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
+function extractId(url) { const m=url.match(/docs\/([a-zA-Z0-9_-]+)/); return m?m[1]:url; }
+
+// Track the Claude popup window so we can reuse it
+let claudePopup = null;
+const POPUP_W = 560, POPUP_H = 700;
+
+function showResult(agentId, prompt) {
+  const area = document.getElementById('resultArea-'+agentId);
+  area.classList.add('visible');
+  area.innerHTML = `
+    <h4 style="color:var(--success);">✅ Agent Deployed</h4>
+    <p style="font-size:12px;color:var(--dim);margin-bottom:8px;">Claude opened in a popup window with your prompt. Check it and hit send.</p>
+    <details style="margin-top:4px;">
+      <summary style="font-size:12px;color:var(--muted);cursor:pointer;">View generated prompt</summary>
+      <textarea id="prompt-${agentId}" readonly style="margin-top:6px;">${prompt}</textarea>
+      <div style="margin-top:6px;display:flex;gap:8px;">
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="openClaudePopup('prompt-${agentId}',this)">🔄 Re-open in Claude</button>
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="copyOnly('prompt-${agentId}',this)">📋 Copy</button>
+      </div>
+    </details>
+  `;
+  // Auto-launch Claude popup
+  launchClaudeWithPrompt(prompt);
+  addLog(agentId,'success','Agent deployed — Claude opened in popup window.');
+}
+function addLog(agentId, type, text) {
+  const log = document.getElementById('logArea-'+agentId);
+  if(log.querySelector('div[style]')) log.innerHTML='';
+  log.innerHTML += `<div class="log-entry ${type}"><div class="log-time">${getTime()}</div><div>${text}</div></div>`;
+}
+function launchClaudeWithPrompt(prompt) {
+  // Copy to clipboard as backup
+  navigator.clipboard.writeText(prompt).catch(()=>{});
+  // Calculate popup position: right side of screen, vertically centered
+  const left = window.screenX + window.outerWidth - POPUP_W - 40;
+  const top = window.screenY + Math.round((window.outerHeight - POPUP_H) / 2);
+  const features = `width=${POPUP_W},height=${POPUP_H},left=${left},top=${top},resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=yes`;
+  const encoded = encodeURIComponent(prompt);
+  const url = 'https://claude.ai/new?q=' + encoded;
+  // Open (or reuse) the popup
+  claudePopup = window.open(url, 'claude_agent_popup', features);
+  if(claudePopup) claudePopup.focus();
+}
+function openClaudePopup(id, btn) {
+  const prompt = document.getElementById(id).value;
+  launchClaudeWithPrompt(prompt);
+  btn.textContent='✅ Opened!';setTimeout(()=>{btn.innerHTML='🔄 Re-open in Claude';},2000);
+}
+function copyOnly(id, btn) {
+  const prompt = document.getElementById(id).value;
+  navigator.clipboard.writeText(prompt).then(()=>{
+    btn.textContent='✓ Copied!';setTimeout(()=>{btn.textContent='📋 Copy';},2000);
+  }).catch(()=>{
+    document.getElementById(id).select();document.execCommand('copy');
+    btn.textContent='✓ Copied!';setTimeout(()=>{btn.textContent='📋 Copy';},2000);
+  });
+}
+
+function runDiscover() {
+  const job=document.getElementById('inp-discover-job').value;
+  const text=document.getElementById('inp-discover-text').value.trim();
+  if(!job){alert('Please select a Job to Be Done.');return;}
+  if(!text){alert('Please describe what you want to learn.');return;}
+  addLog('discover','info',`<strong>Job:</strong> ${job}`);
+  addLog('discover','processing','Deploying agent — opening Claude...');
+  const prompt=`🔍 DISCOVERY AGENT — DEPLOY
+
+**Job to Be Done:** ${job}
+**Submitted:** ${new Date().toLocaleString('en-GB')}
+
+---
+**RESEARCH QUESTION / AREA:**
+${text}
+---
+
+**AGENT INSTRUCTIONS:**
+1. Read the research question and refine it into a clear, specific discovery item title (a question format works best)
+2. Based on the nature of the question, suggest the most appropriate research method:
+   - "User interview" — for understanding behaviors, motivations, and context
+   - "Data analysis" — for quantifying frequency, duration, or patterns
+   - "Diary study" — for capturing experiences over time in natural context
+   - "Usability test" — for evaluating specific designs or concepts with users
+   - "Survey" — for broad quantitative validation across many users
+3. Add the discovery item to "All Discovery" collection (Slite ID: MFcG0JEQAzh2cI) with these fields:
+   - Title: the refined research question
+   - Job (column ID: qEJym2PHc4): "${job}"
+   - Method (column ID: JfzDkkS_bI): your suggested method
+   - Status (column ID: aWJOgY9yDb): "Not started"
+   - Key Finding (column ID: z11DQ993rs): leave empty
+   - Linked Opportunity (column ID: WwKQmnJqK7): leave empty
+4. After creating the collection item, add rich content to the note body (using append-blocks) with the following sections:
+
+   **Research Brief**
+   - Context: Why this research matters for the "${job}" job and which mission(s) it connects to
+   - Hypothesis: What we currently believe and what this research aims to validate or challenge
+
+   **Suggested Interview / Research Questions**
+   - 5–8 open-ended questions tailored to the research topic
+   - Mix of exploratory ("How do you currently..."), behavioral ("Walk me through the last time you..."), and evaluative ("What would need to change for you to...") questions
+   - For each question, add a short note on what it aims to uncover
+
+   **Participant Segmentation**
+   - Primary segment: who to talk to first (role, experience level, firm size, client portfolio type)
+   - Secondary segment: contrasting group that might reveal different perspectives
+   - Recruitment criteria: 3–5 screening attributes
+   - Suggested sample size and rationale
+
+   **Additional Guidance**
+   - Recommended session format and duration
+   - Key things to observe beyond verbal answers (workarounds, tools open, emotional reactions)
+   - Related discovery items or past research to review before starting (if any exist in the collection)
+   - Potential biases to watch out for
+
+   Format everything cleanly with headers and bullet points so the UX designer can review, edit, and use it directly as a research plan.
+5. Confirm with link to the created item`;
+  showResult('discover',prompt);
+}
+
+function runOpportunity() {
+  const content=document.getElementById('inp-doc').value.trim();
+  if(!content){alert('Please paste your transcript or notes.');return;}
+  addLog('opportunity','info','<strong>Source:</strong> Interview transcript / research notes');
+  addLog('opportunity','processing','Deploying agent — opening Claude...');
+  const prompt=`💡 OPPORTUNITY AGENT — DEPLOY
+
+**Source:** Interview transcript / research notes
+**Submitted:** ${new Date().toLocaleString('en-GB')}
+
+---
+**INPUT:**
+${content}
+---
+
+**AGENT INSTRUCTIONS:**
+1. Evaluate against JTBD framework (Slite: wCYzIJKe_leay1)
+2. Map to Jobs: ${jobs.map(j=>j.name).join(', ')}
+3. Assess Mission alignment: Functional Automation, Agentic Automation, Trusted Platform, Adjacent Growth
+4. Extract core customer problem / unmet need
+5. Draft opportunity title + description
+6. Suggest Impact and Confidence scores
+7. Search the "All Discovery" collection (Slite ID: MFcG0JEQAzh2cI, format: collection) for discovery items that match the same Job and are related to the opportunity's topic. If a matching discovery item exists, note its URL to link it in step 8.
+8. Add to "All Opportunities" collection (Slite ID: 0CBSdHnBH530nI)
+   - Set field "Created Date" (column ID: ZoUKJBd_3p) to today's date (${new Date().toISOString().split('T')[0]})
+   - Set Status to "Idea"
+   - Set Owner (column ID: 56fedd3d-a715-4bc6-ae4c-2c64a2922db6) to the current Slite user. Use get-user to find the logged-in user and assign them.
+9. If a related discovery item was found in step 7, update that discovery item's "Linked Opportunity" field (column ID: WwKQmnJqK7) with the URL of the newly created opportunity.
+10. Confirm with link, and mention which discovery item was linked (if any).`;
+  showResult('opportunity',prompt);
+}
+
+function runPitch() {
+  const url=document.getElementById('inp-pitch-url').value.trim();
+  if(!url){alert('Please paste an opportunity link.');return;}
+  const noteId=extractId(url);
+  addLog('pitch','info',`<strong>Opportunity:</strong> ${noteId} — <a href="${url}" target="_blank" style="color:var(--del)">View ↗</a>`);
+  addLog('pitch','processing','Deploying agent — opening Claude...');
+  const prompt=`📋 PITCH AGENT — DEPLOY
+
+**Opportunity:** ${url}
+**Note ID:** ${noteId}
+
+**AGENT INSTRUCTIONS:**
+1. Read opportunity from Slite (${noteId})
+2. Read parent Job page for JTBD context
+3. Generate pitch using Template v3.0 (HGNcuEBw-7jY5B):
+   🔥 Problem — core user/business problem, no solutions
+   💸 Business Value — ARPC, churn, customers, be quantitative
+   👀 Evidence — data, research, support tickets
+   💪 Success Criteria — expected behavior/metric change
+   ⚙️ Sizing — Small/Medium/Large/XL + constraints
+4. Present draft for review
+5. On approval, create note in Pitches collection:
+   - parentNoteId: DeH9uCJqXm1bvn
+   - fields: {"description":"Up for review","b6a735af-5e08-4e4a-acef-a37f6b68ad62":"[Size]"}
+6. Confirm with link`;
+  showResult('pitch',prompt);
+}
+
+function runBrief() {
+  const url=document.getElementById('inp-brief-url').value.trim();
+  if(!url){alert('Please paste a pitch link.');return;}
+  const noteId=extractId(url);
+  addLog('brief','info',`<strong>Pitch:</strong> ${noteId} — <a href="${url}" target="_blank" style="color:var(--ai)">View ↗</a>`);
+  addLog('brief','processing','Deploying agent — opening Claude...');
+  const prompt=`✏️ BRIEF AGENT — DEPLOY
+
+**Pitch:** ${url}
+**Note ID:** ${noteId}
+
+**AGENT INSTRUCTIONS:**
+1. Read pitch from Slite (${noteId})
+2. Trace back to original opportunity and read it
+3. Read parent Job page + Mission page for full context
+4. Generate Design Brief 2.1 (template: nlNZ1-SeSrCpnb):
+   📋 Foundations (Day One): Core problem · User & JTBD · Behavior shift · Journey · Metric
+   📝 Description & Context: User signals, business signals, mission relevance, narrative
+   🎯 Core Problem: What, why, cost of not solving
+   👤 User & JTBD: Primary/secondary user, job, failures, impact
+   🗺️ Journey Map: Phase table (Phase|Goal|Pain|Opportunity|Status) + edge cases
+   🔄 Behavior Shift: Current → desired, what we stop optimising for
+   ⚠️ Assumptions: Top 3 with what-if-wrong, smallest test, confidence
+   📊 Outcomes: User/business outcome, primary metric, failure criteria
+   ⚙️ Scope: In/out of scope
+   🎨 Strategy & Direction: Design principles, strategic lens, references
+5. Flag sections needing input with [NEEDS INPUT]
+6. Present draft for review
+7. On approval, create note in Slite alongside the pitch
+8. Confirm with link`;
+  showResult('brief',prompt);
+}
+
+function runDesign() {
+  const url=document.getElementById('inp-design-url').value.trim();
+  if(!url){alert('Please paste a design brief link.');return;}
+  const noteId=extractId(url);
+  addLog('design','info',`<strong>Brief:</strong> ${noteId} — <a href="${url}" target="_blank" style="color:var(--ai)">View ↗</a>`);
+  addLog('design','processing','Deploying agent — opening Claude...');
+  const prompt=`🤖 DESIGN AGENT — DEPLOY
+
+**Design Brief:** ${url}
+**Note ID:** ${noteId}
+
+**AGENT INSTRUCTIONS:**
+1. Read the completed Design Brief from Slite (${noteId})
+2. Load Adesy Web Components design system context (SKILL.md)
+3. Using the brief as prompt context, generate solution proposals:
+   - Reference specific components (Button, Input field, Data Table, etc.) with variants
+   - Apply design tokens (color, typography, spacing)
+   - Follow layout rules (Screen/Screen+Sidebar grid)
+   - Only use Storybook-available components
+4. Generate 2-3 alternative solutions varying on key dimensions from the brief
+5. For each solution: describe layout, component usage, interaction flow, and how it addresses the core problem
+6. If Figma MCP is available, offer to create wireframe-level designs
+7. Present solutions for review`;
+  showResult('design',prompt);
+}
+
+function runValidate() {
+  const text=document.getElementById('inp-validate-text').value.trim();
+  if(!text){alert('Please describe what to validate.');return;}
+  addLog('validate','info','Validation input received');
+  addLog('validate','processing','Deploying agent — opening Claude...');
+  const prompt=`🧪 VALIDATION AGENT — DEPLOY
+
+**Input:**
+${text}
+
+**AGENT INSTRUCTIONS:**
+1. Analyze the solution(s) to be validated
+2. Recommend validation method (usability test / concept test / preference test)
+3. Generate:
+   - Test script with tasks and scenarios
+   - Participant screening criteria based on JTBD user segments
+   - Structured feedback capture template
+   - Session guide with intro, tasks, probing questions, debrief
+4. Define success criteria tied to the design brief's primary metric
+5. Present the validation plan for review`;
+  showResult('validate',prompt);
+}
+
+function runIterate() {
+  const feedback=document.getElementById('inp-iterate-text').value.trim();
+  const briefUrl=document.getElementById('inp-iterate-url').value.trim();
+  if(!feedback){alert('Please paste customer feedback.');return;}
+  addLog('iterate','info','Feedback received'+(briefUrl?' — brief linked':''));
+  addLog('iterate','processing','Deploying agent — opening Claude...');
+  const briefId=briefUrl?extractId(briefUrl):'[not provided]';
+  const prompt=`🔄 ITERATION AGENT — DEPLOY
+
+**Design Brief:** ${briefUrl||'[paste link when deploying]'}
+**Brief ID:** ${briefId}
+
+**CUSTOMER FEEDBACK:**
+${feedback}
+
+**AGENT INSTRUCTIONS:**
+1. Read current Design Brief from Slite (${briefId})
+2. Structure the feedback as:
+   - New constraints to add
+   - Revised success criteria
+   - Specific pain points to address
+3. Update the brief with validation learnings
+4. Hand off to Design Agent: regenerate solutions incorporating feedback
+5. Compare new vs. previous solutions against evidence
+6. Present updated solutions for review`;
+  showResult('iterate',prompt);
+}
+
+function runSolution() {
+  const url=document.getElementById('inp-solution-url').value.trim();
+  const figma=document.getElementById('inp-solution-figma').value.trim();
+  if(!url){alert('Please paste the design brief link.');return;}
+  const noteId=extractId(url);
+  addLog('solution','info',`<strong>Brief:</strong> ${noteId}`+(figma?' + Figma attached':''));
+  addLog('solution','processing','Deploying agent — opening Claude...');
+  const prompt=`✅ SOLUTION AGENT — DEPLOY
+
+**Design Brief:** ${url}
+**Brief ID:** ${noteId}
+${figma?'**Figma:** '+figma:''}
+
+**AGENT INSTRUCTIONS:**
+1. Read the validated Design Brief from Slite (${noteId})
+${figma?'2. Read Figma design via MCP for component details':'2. Use solution descriptions from the brief'}
+3. Generate Solution Scope containing:
+   - Final design description with all component references
+   - Interaction specs: states, transitions, error handling, edge cases
+   - Component mapping: exact Adesy Web Components + variant properties
+   - Token references: all color, typography, spacing tokens
+   - Validation evidence: customer testing summary + confidence
+   - Acceptance criteria: updated from brief with validation learnings
+4. Create Solution Scope note in Slite
+5. Confirm with link`;
+  showResult('solution',prompt);
+}
+
+// ──────────────────── NAV ────────────────────
+function selectAgent(i) {
+  currentAgent=i;
+  renderPipeline();
+  renderSidebar();
+  renderMain();
+}
+
+// ──────────────────── INIT ────────────────────
+renderPipeline();
+renderSidebar();
+renderAccordions();
+renderMain();
+</script>
+</body>
+</html>
