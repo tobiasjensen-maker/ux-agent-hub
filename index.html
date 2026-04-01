@@ -16,21 +16,15 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;}
 
 /* Header */
-.header{padding:32px 40px 24px;border-bottom:1px solid var(--border);}
-.header-top{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
-.hub-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--ai),var(--disc));display:flex;align-items:center;justify-content:center;font-size:20px;color:white;}
-.header h1{font-size:24px;font-weight:700;letter-spacing:-.3px;}
+.header{padding:10px 40px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;background:var(--bg);}
+.header-top{display:flex;align-items:center;gap:10px;}
+.hub-icon{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--ai),var(--disc));display:flex;align-items:center;justify-content:center;font-size:14px;color:white;}
+.header h1{font-size:17px;font-weight:700;letter-spacing:-.3px;}
 .header h1 span{color:var(--ai);font-weight:800;}
-.header p{color:var(--muted);font-size:14px;max-width:680px;}
 
-/* Pipeline mini-bar */
-.pipeline-bar{display:flex;gap:2px;padding:16px 40px;border-bottom:1px solid var(--border);overflow-x:auto;}
-.pipe-dot{flex:1;min-width:0;height:4px;border-radius:2px;background:var(--border);cursor:pointer;transition:all .2s;}
-.pipe-dot:hover{opacity:.8;transform:scaleY(2);}
-.pipe-dot.active{transform:scaleY(2);}
 
 /* Layout */
-.layout{display:grid;grid-template-columns:260px 1fr 300px;min-height:calc(100vh - 140px);}
+.layout{display:grid;grid-template-columns:260px 1fr 300px;height:calc(100vh - var(--header-h,72px));position:sticky;top:var(--header-h,72px);}
 @media(max-width:1200px){.layout{grid-template-columns:260px 1fr;}.right-panel{display:none;}}
 @media(max-width:900px){.layout{grid-template-columns:1fr;}.right-panel{display:none;}}
 
@@ -160,11 +154,7 @@ textarea{min-height:120px;}
     <div class="hub-icon">⚡</div>
     <h1>UX <span>Agent</span> Hub</h1>
   </div>
-  <p>Eight specialised AI agents that power the UX designer's workflow — from discovery research through validated solution delivery. Deploy an agent to get started.</p>
 </div>
-
-<!-- PIPELINE MINI-BAR -->
-<div class="pipeline-bar" id="pipelineBar"></div>
 
 <!-- LAYOUT -->
 <div class="layout">
@@ -178,7 +168,7 @@ textarea{min-height:120px;}
   <!-- MAIN CONTENT -->
   <div class="main-content" id="mainContent"></div>
 
-  <!-- RIGHT PANEL: JTBD & Missions -->
+  <!-- RIGHT PANEL: JTBD & Propositions -->
   <div class="right-panel">
     <div class="right-panel-label" style="display:flex;align-items:center;gap:6px;">
       <span>⭐</span> Jobs to Be Done
@@ -189,7 +179,7 @@ textarea{min-height:120px;}
     <div class="right-divider"></div>
 
     <div class="right-panel-label" style="display:flex;align-items:center;gap:6px;">
-      <span>🎯</span> Missions 2026
+      <span>🎯</span> Propositions 2026
       <a href="https://e-conomic.slite.com/app/docs/O2Xvwt4EwAqCuR" target="_blank" style="margin-left:auto;font-size:10px;color:var(--dim);text-decoration:none;">Open ↗</a>
     </div>
     <div id="missionAccordions"></div>
@@ -224,18 +214,18 @@ const jobs = [
    desc:'I want to trust that the platform I rely on every day is secure, reliable, and compliant — so I can focus on my clients without worrying about data loss, downtime, or regulatory risk.'}
 ];
 const missions = [
-  {name:'Functional Automation',icon:'⚙️',color:'#0891B2',id:'rL_YP9jes6qVnH',
-   desc:'Deeply embed actionable AI-functionality and smart defaults into core Jobs to Be Done throughout our application, enabling mass-market AOs with tools to work effortlessly. This is the engine of our product\'s efficiency and user satisfaction.',
-   outcome:'Directly impacting our main strategic goal of saving AOs 50% of time spent on core bookkeeping tasks.'},
-  {name:'Agentic Automation',icon:'🤖',color:'#7C3AED',id:'ADlV1t-Po9Ie1o',
-   desc:'Introduce the next generation of accounting products through agentic automation of our core JTBD. Building the first accounting agents on e-conomic, empowering forward-looking AOs with a digital workforce.',
-   outcome:'Directly impacting time spent on core bookkeeping reduced by 50%.'},
-  {name:'Trusted Platform',icon:'🤝',color:'#4F46E5',id:'7M-oAAd97Ny9Hd',
-   desc:'Remain the most trusted solution towards AOs by strengthening platform APIs, data, user access and security in an agentic future. Ensure mobile supports JTBD automation growth, and stay ahead of compliance through collaboration with the Danish Government.',
-   outcome:'Supporting 50% time saved for AOs and essential KPIs: Signups, Retention, Security Index, Compliance.'},
-  {name:'Adjacent Growth',icon:'📈',color:'#059669',id:'ARPs43Vd03BdTL',
-   desc:'Succeed with growth outside our core by commercialising Payroll and Cards. Targeting +200k payslips and +150m DKK transactional volume with CES of +6 in 2026.',
-   outcome:'Expanding into new territories to pursue new growth opportunities beyond core accounting.'}
+  {name:'Automation',icon:'⚙️',color:'#0891B2',id:'rL_YP9jes6qVnH',
+   desc:'Embed AI-powered automation and smart defaults into core bookkeeping JTBD — from document collection and bank handling through supplier invoices, payroll, and period closing. The engine of efficiency for mass-market AOs.',
+   outcome:'Save AOs 50% of time spent on core bookkeeping tasks.',
+   jobs:'Collect Documents, Handle Bank, Supplier Invoices, Prioritise Tasks, Overview & Control, Handle Payroll, Period Closing'},
+  {name:'Advisory',icon:'🧠',color:'#7C3AED',id:'ADlV1t-Po9Ie1o',
+   desc:'Transform accountants from bookkeepers into trusted advisors. Surface anomalies proactively and equip AOs with insights and tools to guide their clients on compliance, efficiency, and business strategy.',
+   outcome:'Accountants recognised as strategic advisors, not just bookkeepers.',
+   jobs:'Advice About Anomalies, Business Advisory'},
+  {name:'Platform & Partners',icon:'🤝',color:'#059669',id:'7M-oAAd97Ny9Hd',
+   desc:'Strengthen the platform foundation — APIs, security, compliance, mobile — and grow through partnerships. Ensure e-conomic remains the most trusted solution in an agentic future while enabling new integrations and ecosystems.',
+   outcome:'Trusted, secure, and extensible platform supporting all propositions.',
+   jobs:'Simple accounting on Mobile, Trusted Platform'}
 ];
 
 const agents = [
@@ -290,9 +280,9 @@ const agents = [
   {
     id:'design', num:'05', name:'Design Agent', icon:'🤖',
     lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
-    tagline:'Generates solution proposals using the Adesy Web Components design system as structured context',
+    tagline:'Generates solution proposals using the Taco Web Components design system as structured context',
     capabilities:[
-      {title:'Design System Awareness',desc:'Knows every Adesy component, variant, token, and layout rule'},
+      {title:'Design System Awareness',desc:'Knows every Taco component, variant, token, and layout rule'},
       {title:'Multi-Solution Generation',desc:'Produces multiple alternatives varying on key dimensions'},
       {title:'Figma Integration',desc:'Can create wireframe-level designs via Figma MCP'},
       {title:'Code-Ready Output',desc:'References Storybook-available components for near-instant handoff'}
@@ -329,7 +319,7 @@ const agents = [
     tagline:'Packages the validated solution into a delivery-ready specification with component mappings',
     capabilities:[
       {title:'Spec Generation',desc:'Create interaction specs: states, transitions, error handling, edge cases'},
-      {title:'Component Mapping',desc:'Map to exact Adesy Web Components with variant properties'},
+      {title:'Component Mapping',desc:'Map to exact Taco Web Components with variant properties'},
       {title:'Token Documentation',desc:'List all color, typography, and spacing tokens applied'},
       {title:'Validation Summary',desc:'Attach customer testing evidence and confidence scores'}
     ],
@@ -340,13 +330,6 @@ const agents = [
 let currentAgent = 0;
 
 // ──────────────────── RENDER ────────────────────
-function renderPipeline() {
-  const bar = document.getElementById('pipelineBar');
-  bar.innerHTML = agents.map((a,i) =>
-    `<div class="pipe-dot ${i===currentAgent?'active':''}" style="${i===currentAgent?'background:'+a.laneColor:''}" onclick="selectAgent(${i})" title="${a.name}"></div>`
-  ).join('');
-}
-
 function renderSidebar() {
   const el = document.getElementById('agentList');
   el.innerHTML = agents.map((a,i) => `
@@ -386,6 +369,7 @@ function renderAccordions() {
       <div class="accordion-body">
         <p style="margin-bottom:6px;">${m.desc}</p>
         <p style="font-size:11px;color:var(--dim);margin-bottom:4px;"><strong>Outcome:</strong> ${m.outcome}</p>
+        <p style="font-size:11px;color:var(--dim);margin-bottom:4px;"><strong>JTBD:</strong> ${m.jobs}</p>
         <a href="https://e-conomic.slite.com/app/docs/${m.id}" target="_blank">View in Slite ↗</a>
       </div>
     </div>
@@ -516,13 +500,13 @@ function getInputHTML(agent) {
     case 'design': return `
       <div class="action-body">
         <h4>Link to Design Brief in Slite</h4>
-        <p>Paste the completed design brief. The agent uses it as context along with the Adesy Web Components design system to generate solution proposals.</p>
+        <p>Paste the completed design brief. The agent uses it as context along with the Taco Web Components design system to generate solution proposals.</p>
         <input type="url" id="inp-design-url" placeholder="https://e-conomic.slite.com/app/docs/...">
         <div class="helper">A completed Design Brief 2.1 with Foundations checklist done</div>
         <div class="template-preview">
           <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Design System Context</div>
-          <div class="tpl-row"><strong>🧩 Component Catalog</strong><div class="tpl-desc">All Adesy Web Components with variants and usage rules</div></div>
-          <div class="tpl-row"><strong>🎨 Design Tokens</strong><div class="tpl-desc">Color, typography, spacing from Adesy Design Tokens</div></div>
+          <div class="tpl-row"><strong>🧩 Component Catalog</strong><div class="tpl-desc">All Taco Web Components with variants and usage rules</div></div>
+          <div class="tpl-row"><strong>🎨 Design Tokens</strong><div class="tpl-desc">Color, typography, spacing from Taco Design Tokens</div></div>
           <div class="tpl-row"><strong>📐 Layout Rules</strong><div class="tpl-desc">Grid systems (Screen, Screen + Sidebar) and spacing</div></div>
           <div class="tpl-row"><strong>📦 Storybook Flags</strong><div class="tpl-desc">What's implemented vs. Figma-only</div></div>
           <div class="tpl-row"><strong>🔄 VUD Migration</strong><div class="tpl-desc">Legacy → modern component mappings</div></div>
@@ -717,7 +701,7 @@ ${content}
 **AGENT INSTRUCTIONS:**
 1. Evaluate against JTBD framework (Slite: wCYzIJKe_leay1)
 2. Map to Jobs: ${jobs.map(j=>j.name).join(', ')}
-3. Assess Mission alignment: Functional Automation, Agentic Automation, Trusted Platform, Adjacent Growth
+3. Assess Proposition alignment: Automation, Advisory, Platform & Partners
 4. Extract core customer problem / unmet need
 5. Draft opportunity title + description
 6. Suggest Impact and Confidence scores
@@ -805,16 +789,95 @@ function runDesign() {
 
 **AGENT INSTRUCTIONS:**
 1. Read the completed Design Brief from Slite (${noteId})
-2. Load Adesy Web Components design system context (SKILL.md)
-3. Using the brief as prompt context, generate solution proposals:
-   - Reference specific components (Button, Input field, Data Table, etc.) with variants
-   - Apply design tokens (color, typography, spacing)
-   - Follow layout rules (Screen/Screen+Sidebar grid)
-   - Only use Storybook-available components
-4. Generate 2-3 alternative solutions varying on key dimensions from the brief
-5. For each solution: describe layout, component usage, interaction flow, and how it addresses the core problem
-6. If Figma MCP is available, offer to create wireframe-level designs
-7. Present solutions for review`;
+2. Load Taco Web Components design system context (SKILL.md)
+3. Identify which strategic proposition this design serves based on the JTBD:
+
+   **AUTOMATION** (Jobs: Collect Documents, Handle Bank, Supplier Invoices, Prioritise Tasks, Overview & Control, Handle Payroll, Period Closing)
+   Design principles:
+   - Minimize clicks and decisions — every interaction should feel like the system already knows what to do
+   - Default to smart automation with human override, not human action with automation assist
+   - Show progress and completion states prominently — AOs need to see hours being saved
+   - Batch operations and bulk actions are first-class citizens, not afterthoughts
+   - Surface confidence levels when the system acts autonomously (high confidence = auto-proceed, low = ask)
+   - Design for "reviewed in 10 seconds, not built in 10 minutes"
+   - North Star: Hours Saved per AO/month — every design choice should demonstrably reduce time on task
+
+   **ADVISORY** (Jobs: Advice About Anomalies, Business Advisory)
+   Design principles:
+   - Present insights, not just data — the AO should see the story, not a spreadsheet
+   - Design for the AO-to-client conversation: outputs should be shareable, explainable, and professional
+   - Use progressive disclosure — lead with the headline, let them drill into evidence
+   - Build trust through transparency: show reasoning, sources, and confidence behind every recommendation
+   - Support the AO's expertise, don't replace it — frame AI suggestions as "here's what I noticed" not "here's what to do"
+   - Enable the AO to add their professional judgement before presenting to clients
+   - North Star: WAU (Freemium → Paid conversion %) — designs should make advisory feel valuable and worth paying for
+
+   **PLATFORM/PARTNERS** (Jobs: Simple accounting on Mobile, Trusted Platform)
+   Design principles:
+   - Reliability and trust are the primary UX — every element should communicate stability and security
+   - Mobile: design for triage and quick actions, not full workflows — the desk is where deep work happens
+   - Platform: make the invisible visible — uptime, data integrity, compliance status should be glanceable
+   - Extensibility: design patterns that third parties can build on without breaking consistency
+   - Progressive trust: let AOs verify before they rely — show audit trails, calculation breakdowns, change logs
+   - Respect that AOs stake their professional reputation on this platform
+   - North Star: 3rd Party Agents in Marketplace (ecosystem ARR) — design for an ecosystem, not just a product
+
+4. Using the brief + proposition principles as context, generate a **coded HTML prototype** for each solution.
+
+   **OUTPUT FORMAT: Single-file HTML prototype**
+   Each solution must be a working, interactive HTML file that the UX designer can open in a browser.
+
+   **Taco Web Components — use these exact elements:**
+   - \`<adesy-button appearance="primary|default|ghost|discrete|danger">\` — Buttons (add \`icon-left\` or \`icon-right\` attribute for icons, \`disabled\` for disabled state)
+   - \`<adesy-icon-button appearance="primary|default|ghost|discrete|danger">\` — Icon-only buttons (32×32)
+   - \`<adesy-input-field label="..." placeholder="...">\` — Text inputs (280–320px short, 400–600px long, 600–720px max)
+   - \`<adesy-text-area label="..." placeholder="...">\` — Multi-line text input
+   - \`<adesy-dropdown label="...">\` with \`<adesy-option>\` children — Select dropdowns
+   - \`<adesy-radio-button-group>\` with \`<adesy-radio-button>\` — Radio selections
+   - \`<adesy-toggle>\` — On/off switch (Figma only — note in comments)
+   - \`<adesy-data-table>\` with \`<adesy-column>\` and row data — Full data tables with sorting, selection
+   - \`<adesy-table-bulk-action-bar>\` — Floating action bar for selected table rows
+   - \`<adesy-tag appearance="..." label="...">\` — Status tags, labels, chips
+   - \`<adesy-tabs>\` with \`<adesy-tab>\` children — Tab navigation
+   - \`<adesy-topbar-navigation>\` — Top app navigation bar
+   - \`<adesy-pagination>\` — Page navigation for tables
+   - \`<adesy-accordion-group>\` with \`<adesy-accordion>\` — Collapsible sections
+   - \`<adesy-card>\` — Content container cards (left-aligned CTAs only)
+   - \`<adesy-menu-button>\` — Button with dropdown menu
+   - \`<adesy-avatar>\` — User avatar (image or initials)
+   - \`<adesy-donut-chart>\` — Proportional data chart
+   - \`<adesy-column-filter>\` — Column filter popover for tables
+   - \`<adesy-divider>\` — Horizontal section separator
+
+   **Design tokens (CSS custom properties):**
+   - Colors: \`--color-button-surface-primary\`, \`--color-button-surface-hover\`, \`--color-button-surface-tertiary\`
+   - Use the Taco token naming pattern \`--color/{category}/{property}\`
+   - Typography: \`--font-size-interactive-button-s\`, \`--font-size-interactive-button-xs\`
+
+   **Layout rules:**
+   - Without sidebar: use CSS grid matching Screen Grid Layout (max-width breakpoints)
+   - With sidebar: use CSS grid matching Screen + Sidebar Grid Layout
+   - Page layout spacing must follow the Web Components Grid system
+
+   **Prototype requirements:**
+   - Self-contained single HTML file (inline CSS + JS)
+   - Use Web Component tag names as specified above (even if not registered — they render as custom elements and show intent)
+   - Include realistic sample data that matches the JTBD context (real-looking AO names, client names, Danish accounting terms)
+   - Make interactions work: tabs switch, accordions expand, buttons show hover states, tables can sort
+   - Add CSS that approximates the Taco design tokens (neutral greys, blue primary, clean sans-serif typography)
+   - Comment each section with which proposition principle it addresses
+   - Include a header comment block listing: JTBD, Proposition, Key principles applied
+
+   **Do NOT:**
+   - Use VUD components (deprecated)
+   - Use components prefixed with \`🧩 BASE BLOCKS_\`
+   - Use Toggle or multi-select Dropdown in production (Figma only — flag in comments)
+
+5. Generate 2-3 alternative solutions as separate HTML files, varying on key dimensions from the brief
+6. For each solution: include an inline comment block explaining layout decisions, component choices, interaction flow, and how it addresses the core problem through the lens of its proposition
+7. If Figma MCP is available, also offer to create the design in Figma using the exact component keys from the design system
+8. Present solutions for review, noting how each scores against the relevant North Star metric
+9. Save each prototype as a separate HTML file so the designer can open, review, and share them`;
   showResult('design',prompt);
 }
 
@@ -888,7 +951,7 @@ ${figma?'2. Read Figma design via MCP for component details':'2. Use solution de
 3. Generate Solution Scope containing:
    - Final design description with all component references
    - Interaction specs: states, transitions, error handling, edge cases
-   - Component mapping: exact Adesy Web Components + variant properties
+   - Component mapping: exact Taco Web Components + variant properties
    - Token references: all color, typography, spacing tokens
    - Validation evidence: customer testing summary + confidence
    - Acceptance criteria: updated from brief with validation learnings
@@ -900,16 +963,19 @@ ${figma?'2. Read Figma design via MCP for component details':'2. Use solution de
 // ──────────────────── NAV ────────────────────
 function selectAgent(i) {
   currentAgent=i;
-  renderPipeline();
+
   renderSidebar();
   renderMain();
 }
 
 // ──────────────────── INIT ────────────────────
-renderPipeline();
 renderSidebar();
 renderAccordions();
 renderMain();
+
+// Set header height for layout calc
+const hdr = document.querySelector('.header');
+document.documentElement.style.setProperty('--header-h', hdr.offsetHeight + 'px');
 </script>
 </body>
 </html>
