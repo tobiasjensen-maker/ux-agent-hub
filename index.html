@@ -50,8 +50,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .agent-header .agent-phase{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.6;}
 .agent-header p{color:var(--muted);font-size:14px;max-width:600px;}
 
-/* Capabilities */
-.capabilities{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:24px;}
+/* Capabilities accordion */
+.cap-accordion{margin-bottom:16px;}
+.cap-toggle{display:flex;align-items:center;gap:5px;padding:4px 0;border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--dim);transition:color .15s;}
+.cap-toggle:hover{color:var(--text);}
+.cap-toggle .cap-arrow{font-size:10px;transition:transform .2s;}
+.cap-toggle.open .cap-arrow{transform:rotate(180deg);}
+.cap-grid{display:none;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:6px;margin-bottom:8px;}
+.cap-grid.open{display:grid;}
 .cap-card{padding:12px 14px;border-radius:10px;background:rgba(0,0,0,.02);border:1px solid var(--border);font-size:13px;}
 .cap-card strong{display:block;margin-bottom:2px;font-size:12px;}
 .cap-card p{color:var(--muted);font-size:12px;margin:0;line-height:1.4;}
@@ -62,6 +68,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .action-header h3{font-size:14px;font-weight:700;}
 .action-header .action-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;}
 .action-body{padding:20px;}
+.action-body h4{font-size:13px;font-weight:600;margin-bottom:3px;margin-top:14px;}
+.action-body h4:first-child{margin-top:0;}
+.action-body p{font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;}
 
 /* Input tabs */
 .input-tabs{display:flex;border-bottom:1px solid var(--border);}
@@ -72,8 +81,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 .input-panel{display:none;padding:20px;}
 .input-panel.active{display:block;}
-.input-panel h4{font-size:14px;font-weight:600;margin-bottom:6px;}
-.input-panel p{font-size:13px;color:var(--muted);margin-bottom:10px;}
+.input-panel h4{font-size:14px;font-weight:600;margin-bottom:4px;margin-top:14px;}
+.input-panel h4:first-child{margin-top:0;}
+.input-panel p{font-size:14px;color:var(--muted);margin-bottom:8px;line-height:1.5;}
 
 /* Form elements */
 textarea,input[type="url"],input[type="text"]{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#FFFFFF;color:var(--text);font-family:inherit;font-size:13px;resize:vertical;transition:border-color .15s;}
@@ -84,25 +94,23 @@ textarea{min-height:120px;}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
 .btn-primary{background:var(--ai);color:white;}
 .btn-primary:hover{filter:brightness(1.15);}
+.btn-primary:disabled{background:var(--border);color:var(--dim);cursor:not-allowed;filter:none;opacity:.6;}
 .btn-ghost{background:#F1F5F9;color:var(--text);border:1px solid var(--border);}
 .btn-ghost:hover{background:#E2E8F0;color:var(--text);}
 
 /* Template preview */
-.template-preview{margin-top:16px;}
+.template-preview{margin-top:10px;}
+.tpl-toggle{display:flex;align-items:center;gap:5px;padding:4px 0;border:none;background:none;cursor:pointer;font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;transition:color .15s;}
+.tpl-toggle:hover{color:var(--muted);}
+.tpl-toggle .tpl-arrow{font-size:10px;transition:transform .2s;}
+.tpl-toggle.open .tpl-arrow{transform:rotate(180deg);}
+.tpl-content{display:none;margin-top:4px;}
+.tpl-content.open{display:block;}
 .tpl-row{padding:8px 12px;border-radius:6px;border:1px solid var(--border);margin-bottom:4px;font-size:12px;background:rgba(0,0,0,.02);}
 .tpl-row strong{color:var(--text);}
 .tpl-row .tpl-desc{color:var(--dim);font-size:11px;margin-top:1px;}
 .tpl-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;margin-left:6px;text-transform:uppercase;vertical-align:middle;}
 
-/* Log */
-.log-section{margin-top:16px;}
-.log-section h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);margin-bottom:8px;}
-.log-entry{padding:10px 14px;border-left:3px solid var(--border);margin-bottom:8px;font-size:13px;background:rgba(0,0,0,.02);border-radius:0 8px 8px 0;}
-.log-entry.success{border-left-color:var(--val);}
-.log-entry.processing{border-left-color:var(--ai);}
-.log-entry.success{border-left-color:var(--success);}
-.log-entry.info{border-left-color:var(--del);}
-.log-time{font-size:10px;color:var(--dim);font-weight:600;}
 
 /* Result area */
 .result-area{display:none;padding:20px;border-top:1px solid var(--border);}
@@ -232,7 +240,7 @@ const agents = [
   {
     id:'discover', num:'01', name:'Discovery Agent', icon:'🔍',
     lane:'Discovery', laneColor:'var(--disc)', bgGlow:'var(--glow-disc)',
-    tagline:'Creates discovery items in your backlog — choose a JTBD, describe your research question, and the agent adds it to the All Discovery collection',
+    tagline:'Creates discovery items in your backlog — choose a JTBD, describe your research question, and the agent adds it to the <a href="https://e-conomic.slite.com/app/docs/MFcG0JEQAzh2cI" target="_blank" style="color:var(--ai);text-decoration:none;font-weight:600;">All Discovery collection</a>',
     capabilities:[
       {title:'JTBD Selection',desc:'Pick from your 11 Jobs to Be Done to scope the research area'},
       {title:'Research Scoping',desc:'Define what you want to learn — the agent structures it as a discovery item'},
@@ -396,13 +404,18 @@ function renderMain() {
       <p>${a.tagline}</p>
     </div>
 
-    <div class="capabilities">
-      ${a.capabilities.map(c => `
-        <div class="cap-card">
-          <strong>${c.title}</strong>
-          <p>${c.desc}</p>
-        </div>
-      `).join('')}
+    <div class="cap-accordion">
+      <button class="cap-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+        What can this agent do? <span class="cap-arrow">▾</span>
+      </button>
+      <div class="cap-grid">
+        ${a.capabilities.map(c => `
+          <div class="cap-card">
+            <strong>${c.title}</strong>
+            <p>${c.desc}</p>
+          </div>
+        `).join('')}
+      </div>
     </div>
 
     <div class="action-panel">
@@ -414,12 +427,6 @@ function renderMain() {
       <div class="result-area" id="resultArea-${a.id}"></div>
     </div>
 
-    <div class="log-section">
-      <h4>Activity Log</h4>
-      <div id="logArea-${a.id}">
-        <div style="text-align:center;padding:20px;color:var(--dim);font-size:13px;">No activity yet. Deploy the agent above to get started.</div>
-      </div>
-    </div>
   `;
 }
 
@@ -429,7 +436,7 @@ function getInputHTML(agent) {
       <div class="action-body">
         <h4>1. Choose a Job to Be Done</h4>
         <p>Select the JTBD area you want to research.</p>
-        <select id="inp-discover-job" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface);color:var(--text);margin-bottom:16px;">
+        <select id="inp-discover-job" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);margin-bottom:12px;">
           <option value="">— Select a Job —</option>
           ${jobs.map(j => '<option value="'+j.name+'">'+j.name+'</option>').join('')}
         </select>
@@ -438,14 +445,16 @@ function getInputHTML(agent) {
         <textarea id="inp-discover-text" placeholder="e.g. How do accountants currently decide which client to work on first in the morning?"></textarea>
         <div class="helper">Be specific about what you want to understand — who, what, why, how.</div>
         <div class="template-preview">
-          <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Discovery Collection Fields</div>
-          <div class="tpl-row"><strong>📋 Title</strong><div class="tpl-desc">Research question (generated from your input)</div></div>
-          <div class="tpl-row"><strong>🏷️ Job</strong><div class="tpl-desc">Linked to the JTBD you selected</div></div>
-          <div class="tpl-row"><strong>🔬 Method</strong><div class="tpl-desc">Suggested: User interview, Data analysis, Diary study, Usability test, Survey</div></div>
-          <div class="tpl-row"><strong>📊 Status</strong><div class="tpl-desc">Auto-set to "Not started"</div></div>
-          <div class="tpl-row"><strong>🔗 Linked Opportunity</strong><div class="tpl-desc">Left empty — to be linked after research</div></div>
+          <button class="tpl-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Discovery Collection Fields <span class="tpl-arrow">▾</span></button>
+          <div class="tpl-content">
+            <div class="tpl-row"><strong>📋 Title</strong><div class="tpl-desc">Research question (generated from your input)</div></div>
+            <div class="tpl-row"><strong>🏷️ Job</strong><div class="tpl-desc">Linked to the JTBD you selected</div></div>
+            <div class="tpl-row"><strong>🔬 Method</strong><div class="tpl-desc">Suggested: User interview, Data analysis, Diary study, Usability test, Survey</div></div>
+            <div class="tpl-row"><strong>📊 Status</strong><div class="tpl-desc">Auto-set to "Not started"</div></div>
+            <div class="tpl-row"><strong>🔗 Linked Opportunity</strong><div class="tpl-desc">Left empty — to be linked after research</div></div>
+          </div>
         </div>
-        <div style="margin-top:12px;"><button class="btn btn-primary" style="background:var(--disc)" onclick="runDiscover()">🔍 Deploy Discovery Agent</button></div>
+        <div style="margin-top:12px;"><button class="btn btn-primary" style="background:var(--disc)" id="btn-discover" onclick="runDiscover()" disabled>🔍 Deploy Discovery Agent</button></div>
       </div>`;
 
     case 'opportunity': return `
@@ -454,7 +463,7 @@ function getInputHTML(agent) {
         <p>Include participant role, context, and direct quotes for best results. The agent will evaluate the input against your JTBD framework and missions.</p>
         <textarea id="inp-doc" placeholder="Paste transcript or research notes here..."></textarea>
         <div class="helper">Supports plain text from Word docs, Google Docs, or any text source.</div>
-        <div style="margin-top:12px;"><button class="btn btn-primary" style="background:var(--disc)" onclick="runOpportunity()">💡 Deploy Opportunity Agent</button></div>
+        <div style="margin-top:12px;"><button class="btn btn-primary" style="background:var(--disc)" id="btn-opportunity" onclick="runOpportunity()" disabled>💡 Deploy Opportunity Agent</button></div>
       </div>`;
 
     case 'pitch': return `
@@ -464,15 +473,17 @@ function getInputHTML(agent) {
         <input type="url" id="inp-pitch-url" placeholder="https://e-conomic.slite.com/app/docs/...">
         <div class="helper">Opportunity from your JTBD backlog</div>
         <div class="template-preview">
-          <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Pitch Template v3.0</div>
-          <div class="tpl-row"><strong>🔥 Problem</strong> <div class="tpl-desc">Core user/business problem — no solutions</div></div>
-          <div class="tpl-row"><strong>💸 Business Value</strong> <div class="tpl-desc">ARPC, churn, new customers — be quantitative</div></div>
-          <div class="tpl-row"><strong>👀 Evidence</strong> <div class="tpl-desc">Data backing: Kubit, Datadog, research, interviews</div></div>
-          <div class="tpl-row"><strong>💪 Success Criteria</strong> <div class="tpl-desc">Expected change in behavior, metrics, or value</div></div>
-          <div class="tpl-row"><strong>⚙️ Sizing</strong> <div class="tpl-desc">Small / Medium / Large / XL + constraints</div></div>
-          <div class="callout" style="border-color:var(--del);color:var(--del);margin-top:8px;">Auto-set: Status → "Up for review" · Owner → Tobias Jensen · Size → from opportunity · Date → today</div>
+          <button class="tpl-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Pitch Template v3.0 <span class="tpl-arrow">▾</span></button>
+          <div class="tpl-content">
+            <div class="tpl-row"><strong>🔥 Problem</strong> <div class="tpl-desc">Core user/business problem — no solutions</div></div>
+            <div class="tpl-row"><strong>💸 Business Value</strong> <div class="tpl-desc">ARPC, churn, new customers — be quantitative</div></div>
+            <div class="tpl-row"><strong>👀 Evidence</strong> <div class="tpl-desc">Data backing: Kubit, Datadog, research, interviews</div></div>
+            <div class="tpl-row"><strong>💪 Success Criteria</strong> <div class="tpl-desc">Expected change in behavior, metrics, or value</div></div>
+            <div class="tpl-row"><strong>⚙️ Sizing</strong> <div class="tpl-desc">Small / Medium / Large / XL + constraints</div></div>
+            <div class="callout" style="border-color:var(--del);color:var(--del);margin-top:8px;">Auto-set: Status → "Up for review" · Owner → logged-in Slite user · Size → from opportunity · Date → today</div>
+          </div>
         </div>
-        <div style="margin-top:14px;"><button class="btn btn-primary" style="background:var(--del)" onclick="runPitch()">📋 Deploy Pitch Agent</button></div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" style="background:var(--del)" id="btn-pitch" onclick="runPitch()" disabled>📋 Deploy Pitch Agent</button></div>
       </div>`;
 
     case 'brief': return `
@@ -482,19 +493,21 @@ function getInputHTML(agent) {
         <input type="url" id="inp-brief-url" placeholder="https://e-conomic.slite.com/app/docs/...">
         <div class="helper">Pitch from your Pitches collection</div>
         <div class="template-preview">
-          <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Design Brief 2.1</div>
-          <div class="tpl-row"><strong>📋 Foundations</strong> <span class="tpl-badge" style="background:rgba(220,38,38,.15);color:#F87171;">DAY ONE</span><div class="tpl-desc">Core problem · Primary user & JTBD · Behavior shift · User journey · Success metric</div></div>
-          <div class="tpl-row"><strong>🎯 Core Problem</strong><div class="tpl-desc">What we're solving, why it matters, cost of not solving</div></div>
-          <div class="tpl-row"><strong>👤 User & JTBD</strong><div class="tpl-desc">Primary/secondary user, job, what goes wrong, impact</div></div>
-          <div class="tpl-row"><strong>🗺️ Journey Map</strong><div class="tpl-desc">Phases, goals, pain points, opportunities, edge cases</div></div>
-          <div class="tpl-row"><strong>🔄 Behavior Shift</strong><div class="tpl-desc">Current → desired, what we stop optimising for</div></div>
-          <div class="tpl-row"><strong>⚠️ Assumptions</strong><div class="tpl-desc">Top 3 with "what if wrong" and smallest test</div></div>
-          <div class="tpl-row"><strong>📊 Outcomes</strong><div class="tpl-desc">User/business outcome, primary metric, failure criteria</div></div>
-          <div class="tpl-row"><strong>⚙️ Scope</strong><div class="tpl-desc">In / Out of scope</div></div>
-          <div class="tpl-row"><strong>🎨 Design Direction</strong><div class="tpl-desc">Principles, strategic lens, references</div></div>
-          <div class="callout" style="border-color:var(--ai);color:var(--ai);margin-top:8px;">The brief IS the LLM prompt. Claude pre-fills from pitch + opportunity. Sections needing your input are flagged [NEEDS INPUT].</div>
+          <button class="tpl-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Design Brief 2.1 <span class="tpl-arrow">▾</span></button>
+          <div class="tpl-content">
+            <div class="tpl-row"><strong>📋 Foundations</strong> <span class="tpl-badge" style="background:rgba(220,38,38,.15);color:#F87171;">DAY ONE</span><div class="tpl-desc">Core problem · Primary user & JTBD · Behavior shift · User journey · Success metric</div></div>
+            <div class="tpl-row"><strong>🎯 Core Problem</strong><div class="tpl-desc">What we're solving, why it matters, cost of not solving</div></div>
+            <div class="tpl-row"><strong>👤 User & JTBD</strong><div class="tpl-desc">Primary/secondary user, job, what goes wrong, impact</div></div>
+            <div class="tpl-row"><strong>🗺️ Journey Map</strong><div class="tpl-desc">Phases, goals, pain points, opportunities, edge cases</div></div>
+            <div class="tpl-row"><strong>🔄 Behavior Shift</strong><div class="tpl-desc">Current → desired, what we stop optimising for</div></div>
+            <div class="tpl-row"><strong>⚠️ Assumptions</strong><div class="tpl-desc">Top 3 with "what if wrong" and smallest test</div></div>
+            <div class="tpl-row"><strong>📊 Outcomes</strong><div class="tpl-desc">User/business outcome, primary metric, failure criteria</div></div>
+            <div class="tpl-row"><strong>⚙️ Scope</strong><div class="tpl-desc">In / Out of scope</div></div>
+            <div class="tpl-row"><strong>🎨 Design Direction</strong><div class="tpl-desc">Principles, strategic lens, references</div></div>
+            <div class="callout" style="border-color:var(--ai);color:var(--ai);margin-top:8px;">The brief IS the LLM prompt. Claude pre-fills from pitch + opportunity. Sections needing your input are flagged [NEEDS INPUT].</div>
+          </div>
         </div>
-        <div style="margin-top:14px;"><button class="btn btn-primary" onclick="runBrief()">✏️ Deploy Brief Agent</button></div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" id="btn-brief" onclick="runBrief()" disabled>✏️ Deploy Brief Agent</button></div>
       </div>`;
 
     case 'design': return `
@@ -504,14 +517,16 @@ function getInputHTML(agent) {
         <input type="url" id="inp-design-url" placeholder="https://e-conomic.slite.com/app/docs/...">
         <div class="helper">A completed Design Brief 2.1 with Foundations checklist done</div>
         <div class="template-preview">
-          <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Design System Context</div>
-          <div class="tpl-row"><strong>🧩 Component Catalog</strong><div class="tpl-desc">All Taco Web Components with variants and usage rules</div></div>
-          <div class="tpl-row"><strong>🎨 Design Tokens</strong><div class="tpl-desc">Color, typography, spacing from Taco Design Tokens</div></div>
-          <div class="tpl-row"><strong>📐 Layout Rules</strong><div class="tpl-desc">Grid systems (Screen, Screen + Sidebar) and spacing</div></div>
-          <div class="tpl-row"><strong>📦 Storybook Flags</strong><div class="tpl-desc">What's implemented vs. Figma-only</div></div>
-          <div class="tpl-row"><strong>🔄 VUD Migration</strong><div class="tpl-desc">Legacy → modern component mappings</div></div>
+          <button class="tpl-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Design System Context <span class="tpl-arrow">▾</span></button>
+          <div class="tpl-content">
+            <div class="tpl-row"><strong>🧩 Component Catalog</strong><div class="tpl-desc">All Taco Web Components with variants and usage rules</div></div>
+            <div class="tpl-row"><strong>🎨 Design Tokens</strong><div class="tpl-desc">Color, typography, spacing from Taco Design Tokens</div></div>
+            <div class="tpl-row"><strong>📐 Layout Rules</strong><div class="tpl-desc">Grid systems (Screen, Screen + Sidebar) and spacing</div></div>
+            <div class="tpl-row"><strong>📦 Storybook Flags</strong><div class="tpl-desc">What's implemented vs. Figma-only</div></div>
+            <div class="tpl-row"><strong>🔄 VUD Migration</strong><div class="tpl-desc">Legacy → modern component mappings</div></div>
+          </div>
         </div>
-        <div style="margin-top:14px;"><button class="btn btn-primary" onclick="runDesign()">🤖 Deploy Design Agent</button></div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" id="btn-design" onclick="runDesign()" disabled>🤖 Deploy Design Agent</button></div>
       </div>`;
 
     case 'validate': return `
@@ -520,12 +535,14 @@ function getInputHTML(agent) {
         <p>Describe the solution(s) to test, or paste a link to the design output. The agent will help you structure the validation approach.</p>
         <textarea id="inp-validate-text" placeholder="Describe the solution to validate, or paste a Slite/Figma link..."></textarea>
         <div class="template-preview">
-          <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">Validation Options</div>
-          <div class="tpl-row"><strong>🧪 Usability Test</strong><div class="tpl-desc">Task-based testing with real users</div></div>
-          <div class="tpl-row"><strong>💡 Concept Test</strong><div class="tpl-desc">Present concepts to gauge understanding and appeal</div></div>
-          <div class="tpl-row"><strong>⚖️ Preference Test</strong><div class="tpl-desc">Compare alternatives to identify strongest solution</div></div>
+          <button class="tpl-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Validation Options <span class="tpl-arrow">▾</span></button>
+          <div class="tpl-content">
+            <div class="tpl-row"><strong>🧪 Usability Test</strong><div class="tpl-desc">Task-based testing with real users</div></div>
+            <div class="tpl-row"><strong>💡 Concept Test</strong><div class="tpl-desc">Present concepts to gauge understanding and appeal</div></div>
+            <div class="tpl-row"><strong>⚖️ Preference Test</strong><div class="tpl-desc">Compare alternatives to identify strongest solution</div></div>
+          </div>
         </div>
-        <div style="margin-top:14px;"><button class="btn btn-primary" style="background:var(--val)" onclick="runValidate()">🧪 Deploy Validation Agent</button></div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" style="background:var(--val)" id="btn-validate" onclick="runValidate()" disabled>🧪 Deploy Validation Agent</button></div>
       </div>`;
 
     case 'iterate': return `
@@ -537,7 +554,7 @@ function getInputHTML(agent) {
           <h4 style="font-size:12px;margin-top:12px;">Link to current Design Brief</h4>
           <input type="url" id="inp-iterate-url" placeholder="https://e-conomic.slite.com/app/docs/..." style="margin-top:6px;">
         </div>
-        <div style="margin-top:14px;"><button class="btn btn-primary" onclick="runIterate()">🔄 Deploy Iteration Agent</button></div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" id="btn-iterate" onclick="runIterate()" disabled>🔄 Deploy Iteration Agent</button></div>
       </div>`;
 
     case 'solution': return `
@@ -550,7 +567,7 @@ function getInputHTML(agent) {
           <h4 style="font-size:12px;margin-top:12px;">Link to final Figma design (optional)</h4>
           <input type="url" id="inp-solution-figma" placeholder="https://www.figma.com/..." style="margin-top:6px;">
         </div>
-        <div style="margin-top:14px;"><button class="btn btn-primary" style="background:var(--del)" onclick="runSolution()">✅ Deploy Solution Agent</button></div>
+        <div style="margin-top:14px;"><button class="btn btn-primary" style="background:var(--del)" id="btn-solution" onclick="runSolution()" disabled>✅ Deploy Solution Agent</button></div>
       </div>`;
   }
 }
@@ -588,12 +605,6 @@ function showResult(agentId, prompt) {
   `;
   // Auto-launch Claude popup
   launchClaudeWithPrompt(prompt);
-  addLog(agentId,'success','Agent deployed — Claude opened in popup window.');
-}
-function addLog(agentId, type, text) {
-  const log = document.getElementById('logArea-'+agentId);
-  if(log.querySelector('div[style]')) log.innerHTML='';
-  log.innerHTML += `<div class="log-entry ${type}"><div class="log-time">${getTime()}</div><div>${text}</div></div>`;
 }
 function launchClaudeWithPrompt(prompt) {
   // Copy to clipboard as backup
@@ -628,8 +639,6 @@ function runDiscover() {
   const text=document.getElementById('inp-discover-text').value.trim();
   if(!job){alert('Please select a Job to Be Done.');return;}
   if(!text){alert('Please describe what you want to learn.');return;}
-  addLog('discover','info',`<strong>Job:</strong> ${job}`);
-  addLog('discover','processing','Deploying agent — opening Claude...');
   const prompt=`🔍 DISCOVERY AGENT — DEPLOY
 
 **Job to Be Done:** ${job}
@@ -655,6 +664,7 @@ ${text}
    - Status (column ID: aWJOgY9yDb): "Not started"
    - Key Finding (column ID: z11DQ993rs): leave empty
    - Linked Opportunity (column ID: WwKQmnJqK7): leave empty
+   - Discovery Owner (column ID: z6O5sCOwBL): set to the current Slite user. Use get-user to find the logged-in user and assign them.
 4. After creating the collection item, add rich content to the note body (using append-blocks) with the following sections:
 
    **Research Brief**
@@ -686,8 +696,6 @@ ${text}
 function runOpportunity() {
   const content=document.getElementById('inp-doc').value.trim();
   if(!content){alert('Please paste your transcript or notes.');return;}
-  addLog('opportunity','info','<strong>Source:</strong> Interview transcript / research notes');
-  addLog('opportunity','processing','Deploying agent — opening Claude...');
   const prompt=`💡 OPPORTUNITY AGENT — DEPLOY
 
 **Source:** Interview transcript / research notes
@@ -719,8 +727,6 @@ function runPitch() {
   const url=document.getElementById('inp-pitch-url').value.trim();
   if(!url){alert('Please paste an opportunity link.');return;}
   const noteId=extractId(url);
-  addLog('pitch','info',`<strong>Opportunity:</strong> ${noteId} — <a href="${url}" target="_blank" style="color:var(--del)">View ↗</a>`);
-  addLog('pitch','processing','Deploying agent — opening Claude...');
   const prompt=`📋 PITCH AGENT — DEPLOY
 
 **Opportunity:** ${url}
@@ -747,8 +753,6 @@ function runBrief() {
   const url=document.getElementById('inp-brief-url').value.trim();
   if(!url){alert('Please paste a pitch link.');return;}
   const noteId=extractId(url);
-  addLog('brief','info',`<strong>Pitch:</strong> ${noteId} — <a href="${url}" target="_blank" style="color:var(--ai)">View ↗</a>`);
-  addLog('brief','processing','Deploying agent — opening Claude...');
   const prompt=`✏️ BRIEF AGENT — DEPLOY
 
 **Pitch:** ${url}
@@ -771,8 +775,14 @@ function runBrief() {
    🎨 Strategy & Direction: Design principles, strategic lens, references
 5. Flag sections needing input with [NEEDS INPUT]
 6. Present draft for review
-7. On approval, create note in Slite alongside the pitch
-8. Confirm with link`;
+7. On approval, add the design brief to the "Design Briefs" collection (Slite ID: VM6WzJHdsCyElX) with these fields:
+   - Title: the design brief title
+   - Process (column ID: tag): set to the appropriate process stage
+   - Owner (column ID: 2836521a-a219-4bc0-b2d4-35a8e0eb1c4e): set to the current Slite user. Use get-user to find the logged-in user and assign them.
+   - Description (column ID: description): a short summary of the brief's core problem and objective
+   - Delivery Period (column ID: a6baa5f3-4331-46c4-8150-9a402f25fd55): leave empty unless the pitch specifies a timeline
+8. Add the full design brief content to the note body using append-blocks
+9. Confirm with link to the created brief in the Design Briefs collection`;
   showResult('brief',prompt);
 }
 
@@ -780,8 +790,6 @@ function runDesign() {
   const url=document.getElementById('inp-design-url').value.trim();
   if(!url){alert('Please paste a design brief link.');return;}
   const noteId=extractId(url);
-  addLog('design','info',`<strong>Brief:</strong> ${noteId} — <a href="${url}" target="_blank" style="color:var(--ai)">View ↗</a>`);
-  addLog('design','processing','Deploying agent — opening Claude...');
   const prompt=`🤖 DESIGN AGENT — DEPLOY
 
 **Design Brief:** ${url}
@@ -884,8 +892,6 @@ function runDesign() {
 function runValidate() {
   const text=document.getElementById('inp-validate-text').value.trim();
   if(!text){alert('Please describe what to validate.');return;}
-  addLog('validate','info','Validation input received');
-  addLog('validate','processing','Deploying agent — opening Claude...');
   const prompt=`🧪 VALIDATION AGENT — DEPLOY
 
 **Input:**
@@ -908,8 +914,6 @@ function runIterate() {
   const feedback=document.getElementById('inp-iterate-text').value.trim();
   const briefUrl=document.getElementById('inp-iterate-url').value.trim();
   if(!feedback){alert('Please paste customer feedback.');return;}
-  addLog('iterate','info','Feedback received'+(briefUrl?' — brief linked':''));
-  addLog('iterate','processing','Deploying agent — opening Claude...');
   const briefId=briefUrl?extractId(briefUrl):'[not provided]';
   const prompt=`🔄 ITERATION AGENT — DEPLOY
 
@@ -937,8 +941,6 @@ function runSolution() {
   const figma=document.getElementById('inp-solution-figma').value.trim();
   if(!url){alert('Please paste the design brief link.');return;}
   const noteId=extractId(url);
-  addLog('solution','info',`<strong>Brief:</strong> ${noteId}`+(figma?' + Figma attached':''));
-  addLog('solution','processing','Deploying agent — opening Claude...');
   const prompt=`✅ SOLUTION AGENT — DEPLOY
 
 **Design Brief:** ${url}
@@ -963,15 +965,52 @@ ${figma?'2. Read Figma design via MCP for component details':'2. Use solution de
 // ──────────────────── NAV ────────────────────
 function selectAgent(i) {
   currentAgent=i;
-
   renderSidebar();
   renderMain();
+  bindInputValidation();
+}
+
+// ──────────────────── INPUT VALIDATION ────────────────────
+const inputRules = {
+  discover:    {btn:'btn-discover',    required:[{id:'inp-discover-job',type:'select'},{id:'inp-discover-text',type:'text'}]},
+  opportunity: {btn:'btn-opportunity', required:[{id:'inp-doc',type:'text'}]},
+  pitch:       {btn:'btn-pitch',       required:[{id:'inp-pitch-url',type:'text'}]},
+  brief:       {btn:'btn-brief',       required:[{id:'inp-brief-url',type:'text'}]},
+  design:      {btn:'btn-design',      required:[{id:'inp-design-url',type:'text'}]},
+  validate:    {btn:'btn-validate',    required:[{id:'inp-validate-text',type:'text'}]},
+  iterate:     {btn:'btn-iterate',     required:[{id:'inp-iterate-text',type:'text'}]},
+  solution:    {btn:'btn-solution',    required:[{id:'inp-solution-url',type:'text'}]}
+};
+
+function bindInputValidation() {
+  const agent = agents[currentAgent];
+  const rule = inputRules[agent.id];
+  if(!rule) return;
+  const btn = document.getElementById(rule.btn);
+  if(!btn) return;
+
+  function check() {
+    const allFilled = rule.required.every(r => {
+      const el = document.getElementById(r.id);
+      return el && el.value.trim() !== '';
+    });
+    btn.disabled = !allFilled;
+  }
+
+  rule.required.forEach(r => {
+    const el = document.getElementById(r.id);
+    if(el) el.addEventListener('input', check);
+    if(el && el.tagName === 'SELECT') el.addEventListener('change', check);
+  });
+
+  check();
 }
 
 // ──────────────────── INIT ────────────────────
 renderSidebar();
 renderAccordions();
 renderMain();
+bindInputValidation();
 
 // Set header height for layout calc
 const hdr = document.querySelector('.header');
