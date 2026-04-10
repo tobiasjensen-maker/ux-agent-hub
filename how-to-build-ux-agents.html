@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Using Jobs to Be Done to Design Agents</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --navy: #353564;
+  --navy-deep: #2D2D5E;
+  --amber: #E8A838;
+  --amber-light: #F5D78E;
+  --cream: #F7E8CA;
+  --cream-light: #FDF5E6;
+  --cream-bg: #FEF6E8;
+  --white: #FFFFFF;
+  --text-dark: #2A2A4A;
+  --text-muted: #6B6B8D;
+  --text-dim: #9090A8;
+  --card-bg: rgba(53,53,100,.04);
+  --card-border: rgba(53,53,100,.1);
+  --disc: #4F46E5;
+  --del: #0891B2;
+  --ai: #7C3AED;
+  --val: #059669;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--cream-bg); overflow: hidden; height: 100vh; }
+
+/* ── Slide container ── */
+.deck { position: relative; width: 100vw; height: 100vh; }
+.slide {
+  position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center;
+  padding: 60px 100px; opacity: 0; pointer-events: none;
+  transition: opacity .5s ease, transform .5s ease;
+  transform: translateX(40px);
+}
+.slide.active { opacity: 1; pointer-events: auto; transform: translateX(0); }
+.slide.exit-left { opacity: 0; transform: translateX(-40px); }
+
+/* Slide themes */
+.slide--light { background: var(--cream-bg); color: var(--text-dark); }
+.slide--cream { background: var(--cream); color: var(--text-dark); }
+.slide--dark { background: var(--navy); color: var(--white); }
+
+/* ── Navigation arrows ── */
+.nav-arrow {
+  position: fixed; top: 50%; transform: translateY(-50%); z-index: 100;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(53,53,100,.06); border: 1px solid rgba(53,53,100,.12);
+  color: var(--navy); font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s; backdrop-filter: blur(8px);
+}
+.nav-arrow:hover { background: var(--amber); border-color: var(--amber); color: var(--navy); transform: translateY(-50%) scale(1.08); }
+.nav-arrow--left { left: 24px; }
+.nav-arrow--right { right: 24px; }
+.nav-arrow:disabled { opacity: .2; cursor: default; pointer-events: none; }
+/* Adapt arrows for dark slides */
+body.dark-slide .nav-arrow { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.15); color: white; }
+body.dark-slide .nav-arrow:hover { background: var(--amber); border-color: var(--amber); color: var(--navy); }
+
+/* ── Progress bar ── */
+.progress { position: fixed; bottom: 0; left: 0; height: 4px; background: var(--navy); z-index: 100; transition: width .4s ease; }
+
+/* ── Slide counter ── */
+.counter { position: fixed; bottom: 16px; right: 28px; font-size: 12px; font-weight: 600; z-index: 100; opacity: .5; }
+body:not(.dark-slide) .counter { color: var(--text-muted); }
+body.dark-slide .counter { color: rgba(255,255,255,.5); }
+
+/* ── Typography ── */
+.label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 12px; }
+.label--navy { color: var(--navy); }
+.label--amber { color: var(--amber); }
+.label--muted { color: var(--text-dim); }
+.title { font-size: clamp(32px, 4vw, 48px); font-weight: 800; line-height: 1.12; margin-bottom: 20px; color: var(--navy); }
+.title .accent { color: var(--amber); }
+.slide--dark .title { color: var(--white); }
+.slide--dark .title .accent { color: var(--amber); }
+.subtitle { font-size: 17px; line-height: 1.6; max-width: 640px; color: var(--text-muted); }
+.slide--dark .subtitle { color: rgba(255,255,255,.7); }
+
+/* ── Card grid ── */
+.cards { display: grid; gap: 20px; margin-top: 32px; }
+.cards--3 { grid-template-columns: repeat(3, 1fr); }
+.cards--2 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 900px) { .cards--3, .cards--2 { grid-template-columns: 1fr; } }
+
+.card {
+  border-radius: 12px; padding: 28px; position: relative; overflow: hidden;
+  transition: transform .2s;
+}
+.card:hover { transform: translateY(-2px); }
+
+/* Light slide cards */
+.slide--light .card, .slide--cream .card { background: rgba(53,53,100,.03); border: 1px solid rgba(53,53,100,.08); }
+.slide--light .card h3, .slide--cream .card h3 { color: var(--navy); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.slide--light .card p, .slide--cream .card p { color: var(--text-muted); font-size: 14px; line-height: 1.55; }
+
+/* Dark slide cards */
+.slide--dark .card { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
+.slide--dark .card h3 { color: var(--white); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.slide--dark .card p { color: rgba(255,255,255,.6); font-size: 14px; line-height: 1.55; }
+
+.card-accent { position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+
+/* ── Framework steps ── */
+.framework { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 16px; align-items: center; margin-top: 32px; }
+.framework-card {
+  background: rgba(53,53,100,.04); border: 1px solid rgba(53,53,100,.1);
+  border-radius: 12px; padding: 28px; text-align: center;
+}
+.framework-card .num {
+  width: 44px; height: 44px; border-radius: 50%; background: var(--navy);
+  color: var(--white); font-size: 18px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+}
+.framework-card h3 { color: var(--navy); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.framework-card p { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+.framework-arrow { color: var(--navy); font-size: 24px; font-weight: 700; text-align: center; }
+@media (max-width: 900px) { .framework { grid-template-columns: 1fr; } .framework-arrow { transform: rotate(90deg); } }
+
+/* Dark framework overrides */
+.slide--dark .framework-card { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.08); }
+.slide--dark .framework-card .num { background: var(--amber); color: var(--navy); }
+.slide--dark .framework-card h3 { color: var(--white); }
+.slide--dark .framework-card p { color: rgba(255,255,255,.6); }
+.slide--dark .framework-arrow { color: var(--amber); }
+
+/* ── Callout ── */
+.callout {
+  padding: 20px 24px; border-radius: 10px; margin-top: 24px;
+  border-left: 4px solid var(--navy); font-size: 15px; line-height: 1.55;
+}
+.slide--light .callout, .slide--cream .callout { background: rgba(53,53,100,.04); color: var(--text-dark); }
+.slide--dark .callout { background: rgba(232,168,56,.08); color: rgba(255,255,255,.85); border-left-color: var(--amber); }
+.callout b { display: block; margin-bottom: 4px; color: var(--navy); }
+.slide--dark .callout b { color: var(--amber); }
+
+/* ── Story Map ── */
+.story-map { display: flex; gap: 0; margin-top: 20px; overflow-x: auto; }
+.story-col { flex: 1; min-width: 0; position: relative; }
+.story-col + .story-col { border-left: 1px dashed rgba(53,53,100,.12); }
+
+/* Backbone header */
+.story-head {
+  padding: 10px 12px; text-align: center;
+  background: var(--navy); color: var(--white);
+  position: relative;
+}
+.story-col:first-child .story-head { border-radius: 8px 0 0 0; }
+.story-col:last-child .story-head { border-radius: 0 8px 0 0; }
+.story-head .sh-num { font-size: 10px; font-weight: 700; opacity: .5; text-transform: uppercase; letter-spacing: 1px; }
+.story-head .sh-name { font-size: 13px; font-weight: 800; margin-top: 2px; }
+
+/* Connector arrow between heads */
+.story-head::after {
+  content: '→'; position: absolute; right: -8px; top: 50%; transform: translateY(-50%);
+  color: var(--navy); font-size: 14px; font-weight: 700; z-index: 2;
+  width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+  background: var(--cream-bg); border-radius: 50%;
+}
+.story-col:last-child .story-head::after { display: none; }
+
+/* Sub-task cards below */
+.story-body { padding: 8px 6px; }
+.story-task {
+  background: rgba(53,53,100,.03); border: 1px solid rgba(53,53,100,.08);
+  border-radius: 6px; padding: 8px 10px; margin-bottom: 6px;
+  font-size: 11px; color: var(--text-muted); line-height: 1.4;
+  transition: transform .15s;
+}
+.story-task:hover { transform: translateY(-1px); background: rgba(53,53,100,.05); }
+.story-task b { color: var(--navy); font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px; }
+
+@media (max-width: 900px) { .story-map { flex-wrap: wrap; } .story-col { flex: 0 0 50%; } }
+
+/* ── 10/80/10 visual ── */
+.rule-bar {
+  display: flex; border-radius: 12px; overflow: hidden; margin-top: 28px; height: 100px;
+  border: 1px solid rgba(53,53,100,.1);
+}
+.rule-segment {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 12px 16px; transition: all .3s;
+}
+.rule-segment--human {
+  flex: 0 0 10%; background: var(--navy); color: var(--white);
+}
+.rule-segment--ai {
+  flex: 0 0 80%; background: rgba(53,53,100,.06); color: var(--navy);
+  border-left: 1px solid rgba(53,53,100,.1); border-right: 1px solid rgba(53,53,100,.1);
+}
+.rule-segment .seg-pct { font-size: 28px; font-weight: 800; line-height: 1; }
+.rule-segment .seg-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; opacity: .7; }
+.rule-segment--ai .seg-pct { color: var(--amber); }
+
+.rule-segment { cursor: pointer; }
+.rule-segment:hover { filter: brightness(1.05); }
+.rule-segment.selected.rule-segment--human { background: var(--navy-deep); box-shadow: 0 0 0 3px var(--amber); }
+.rule-segment.selected.rule-segment--ai { background: rgba(53,53,100,.12); box-shadow: 0 0 0 3px var(--navy); }
+
+.rule-reveal { margin-top: 20px; overflow: hidden; max-height: 0; opacity: 0; transition: max-height .4s ease, opacity .3s ease; }
+.rule-reveal.open { max-height: 300px; opacity: 1; }
+.rule-reveal__content {
+  padding: 24px 28px; border-radius: 12px; background: var(--navy); color: var(--white);
+  transition: background .3s, color .3s;
+}
+.rule-reveal__content.theme-ai { background: rgba(53,53,100,.05); color: var(--text-dark); border: 1px solid rgba(53,53,100,.1); }
+.rule-reveal__content h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.rule-reveal__content.theme-ai h4 { color: var(--amber); }
+.rule-reveal__content:not(.theme-ai) h4 { color: var(--amber-light); }
+.rule-reveal__content p { font-size: 14px; line-height: 1.6; }
+.rule-reveal__content.theme-ai p { color: var(--text-muted); }
+.rule-reveal__content:not(.theme-ai) p { color: rgba(255,255,255,.8); }
+
+/* ── Job Map ── */
+.job-map { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+.lane-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 3px solid; }
+.jcard {
+  background: rgba(53,53,100,.03); border: 1px solid rgba(53,53,100,.08);
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer;
+  border-left: 3px solid transparent; transition: all .2s;
+}
+.jcard:hover, .jcard.open { border-left-color: var(--navy); background: rgba(53,53,100,.06); }
+.jcard h4 { font-size: 13px; font-weight: 700; color: var(--navy); display: flex; justify-content: space-between; align-items: center; }
+.jcard .chevron { font-size: 10px; color: var(--text-dim); transition: transform .2s; }
+.jcard.open .chevron { transform: rotate(180deg); }
+.jcard .jbody { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(53,53,100,.08); }
+.jcard.open .jbody { display: block; }
+.jcard .jstatement { font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 6px; }
+.jcard ol { padding-left: 16px; }
+.jcard li { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; line-height: 1.4; }
+.jcard li b { color: var(--text-dark); }
+@media (max-width: 900px) { .job-map { grid-template-columns: 1fr; } }
+
+/* Dark job map overrides */
+.slide--dark .jcard { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08); border-left-color: transparent; }
+.slide--dark .jcard:hover, .slide--dark .jcard.open { border-left-color: var(--amber); background: rgba(255,255,255,.08); }
+.slide--dark .jcard h4 { color: var(--white); }
+.slide--dark .jcard .chevron { color: rgba(255,255,255,.4); }
+.slide--dark .jcard .jbody { border-top-color: rgba(255,255,255,.08); }
+.slide--dark .jcard .jstatement { color: rgba(255,255,255,.5); }
+.slide--dark .jcard li { color: rgba(255,255,255,.5); }
+.slide--dark .jcard li b { color: rgba(255,255,255,.8); }
+
+/* ── Comparison ── */
+.comparison { display: grid; grid-template-columns: 1fr 1fr; border-radius: 12px; overflow: hidden; margin-top: 24px; }
+.comp-col { padding: 28px; }
+.comp-col--left { background: rgba(53,53,100,.03); border-right: 1px solid rgba(53,53,100,.08); }
+.comp-col--right { background: rgba(53,53,100,.06); }
+.comp-col h3 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.comp-col h3 .dot { width: 10px; height: 10px; border-radius: 50%; }
+.comp-col ol { padding-left: 18px; }
+.comp-col li { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.45; }
+.comp-col li b { color: var(--navy); }
+@media (max-width: 900px) { .comparison { grid-template-columns: 1fr; } .comp-col--left { border-right: none; border-bottom: 1px solid rgba(53,53,100,.08); } }
+
+/* Dark comparison overrides */
+.slide--dark .comp-col--left { background: rgba(255,255,255,.04); border-right-color: rgba(255,255,255,.08); }
+.slide--dark .comp-col--right { background: rgba(255,255,255,.07); }
+.slide--dark .comp-col h3 { color: var(--white); }
+.slide--dark .comp-col li { color: rgba(255,255,255,.6); }
+.slide--dark .comp-col li b { color: var(--white); }
+
+/* ── Wiring ── */
+.wiring { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; }
+.wiring .card h4 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.slide--dark .wiring .card h4 { color: var(--amber); }
+@media (max-width: 900px) { .wiring { grid-template-columns: 1fr; } }
+
+/* ── Pipeline ── */
+.ptable { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 10px; overflow: hidden; margin-top: 20px; font-size: 12px; }
+.ptable th { background: var(--navy); color: var(--white); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 10px 14px; text-align: left; font-size: 11px; }
+.ptable td { padding: 10px 14px; border-bottom: 1px solid rgba(53,53,100,.06); color: var(--text-muted); }
+.ptable tr:last-child td { border-bottom: none; }
+.ptable tr:hover td { background: rgba(53,53,100,.03); }
+.ptable td:first-child { font-weight: 700; color: var(--navy); }
+.ptable td:nth-child(2) { font-weight: 700; color: var(--text-dark); }
+.lane { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+.lane--disc { background: rgba(79,70,229,.1); color: #4F46E5; }
+.lane--del { background: rgba(8,145,178,.1); color: #0891B2; }
+.lane--ai { background: rgba(124,58,237,.1); color: #7C3AED; }
+.lane--val { background: rgba(5,150,105,.1); color: #059669; }
+.pto { font-style: italic; color: var(--text-dim); }
+
+/* Dark pipeline overrides */
+.slide--dark .ptable th { background: var(--amber); color: var(--navy); }
+.slide--dark .ptable td { border-bottom-color: rgba(255,255,255,.06); color: rgba(255,255,255,.75); }
+.slide--dark .ptable tr:hover td { background: rgba(255,255,255,.04); }
+.slide--dark .ptable td:first-child { color: var(--amber); }
+.slide--dark .ptable td:nth-child(2) { color: var(--white); }
+.slide--dark .lane--disc { background: rgba(79,70,229,.2); color: #8B83F0; }
+.slide--dark .lane--del { background: rgba(8,145,178,.2); color: #3DD8F5; }
+.slide--dark .lane--ai { background: rgba(124,58,237,.2); color: #B794F4; }
+.slide--dark .lane--val { background: rgba(5,150,105,.2); color: #5DE8B5; }
+.slide--dark .pto { color: rgba(255,255,255,.4); }
+
+/* ── CTA cards ── */
+.cta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 28px; }
+.cta-card {
+  background: rgba(53,53,100,.04); border: 1px solid rgba(53,53,100,.08);
+  border-radius: 10px; padding: 22px; position: relative;
+}
+.cta-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--navy); border-radius: 10px 10px 0 0; }
+.cta-card h3 { color: var(--navy); font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.cta-card p { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+@media (max-width: 900px) { .cta-grid { grid-template-columns: 1fr; } }
+
+/* ── Decorative blob (e-conomic style) ── */
+.blob {
+  position: absolute; opacity: .06; pointer-events: none;
+}
+.blob svg { width: 100%; height: 100%; }
+.slide--light .blob, .slide--cream .blob { opacity: .08; }
+.slide--dark .blob { opacity: .04; }
+</style>
+</head>
+<body>
+
+<!-- Side arrows -->
+<button class="nav-arrow nav-arrow--left" id="prevBtn" onclick="go(-1)">&#8592;</button>
+<button class="nav-arrow nav-arrow--right" id="nextBtn" onclick="go(1)">&#8594;</button>
+<div class="progress" id="progress"></div>
+<div class="counter" id="counter"></div>
+
+<div class="deck" id="deck">
+
+<!-- 0: TITLE -->
+<div class="slide slide--cream active" data-theme="light">
+  <div class="blob" style="top:-80px;right:-60px;width:400px;height:400px;">
+    <svg viewBox="0 0 200 200"><circle cx="100" cy="60" r="50" fill="#353564"/><circle cx="60" cy="130" r="40" fill="#353564"/><circle cx="140" cy="130" r="40" fill="#353564"/><circle cx="100" cy="100" r="20" fill="#353564"/></svg>
+  </div>
+  <p class="label label--navy">Visma e-conomic · UX Team</p>
+  <h1 class="title">Using Jobs to Be Done<br>to Design <span class="accent">Agents</span></h1>
+  <p class="subtitle">A framework for deciding what agents to build — and a case study from our UX team.</p>
+  <p style="margin-top:40px;font-size:14px;color:var(--text-dim);">Tobias Jensen</p>
+</div>
+
+<!-- 1: WHAT IS JTBD? -->
+<div class="slide slide--light" data-theme="light">
+  <p class="label label--navy">The theory</p>
+  <h2 class="title">What is <span class="accent">Jobs to Be Done?</span></h2>
+  <p class="subtitle">JTBD is a framework that shifts focus from what you're building to why someone needs it. Instead of starting from features or solutions, you start from the jobs people are trying to get done.</p>
+  <div class="cards cards--2" style="margin-top:28px;">
+    <div class="card"><div class="card-accent" style="background:var(--navy)"></div><h3>The idea</h3><p>People don't want products — they want to make progress in their lives or work. A "job" is the progress someone is trying to make in a particular circumstance. When you understand the job, you can design something that actually helps.</p></div>
+    <div class="card"><div class="card-accent" style="background:var(--navy)"></div><h3>The job statement</h3><p>Every job can be expressed as a single statement that captures context, motivation, and desired outcome. This gives you a stable anchor that doesn't change even as tools and solutions evolve.</p></div>
+  </div>
+  <div class="callout" style="margin-top:24px;">
+    <b>The job statement format</b>
+    "When <em>[situation]</em>, I want to <em>[motivation]</em>, so I can <em>[expected outcome]</em>."
+  </div>
+</div>
+
+<!-- 2: THE JOB MAP -->
+<div class="slide slide--light" data-theme="light">
+  <p class="label label--navy">The theory</p>
+  <h2 class="title" style="font-size:clamp(26px,3.5vw,38px);">Ulwick's <span class="accent">Universal Job Map</span></h2>
+  <p class="subtitle" style="margin-bottom:12px;">Tony Ulwick took JTBD further by defining eight stages that apply to virtually any job. The backbone reads left-to-right like a story map — with example sub-tasks below each stage.</p>
+  <div class="story-map">
+    <div class="story-col">
+      <div class="story-head"><div class="sh-num">1</div><div class="sh-name">Define</div></div>
+      <div class="story-body">
+        <div class="story-task"><b>Plan the approach</b>Determine goals, scope, and constraints</div>
+        <div class="story-task"><b>Set success criteria</b>What does "done well" look like?</div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-head"><div class="sh-num">2</div><div class="sh-name">Locate</div></div>
+      <div class="story-body">
+        <div class="story-task"><b>Gather inputs</b>Find the data, docs, and people needed</div>
+        <div class="story-task"><b>Search prior work</b>Check if this has been done before</div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-head"><div class="sh-num">3</div><div class="sh-name">Prepare</div></div>
+      <div class="story-body">
+        <div class="story-task"><b>Organise inputs</b>Structure and clean what you've gathered</div>
+        <div class="story-task"><b>Set up workspace</b>Templates, tools, environment</div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-head"><div class="sh-num">4</div><div class="sh-name">Confirm</div></div>
+      <div class="story-body">
+        <div class="story-task"><b>Verify readiness</b>Do I have everything to proceed?</div>
+        <div class="story-task"><b>Get alignment</b>Stakeholder sign-off or self-check</div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-head"><div class="sh-num">5</div><div class="sh-name">Execute</div></div>
+      <div class="story-body">
+        <div class="story-task"><b>Do the core work</b>The creative or analytical task itself</div>
+        <div class="story-task"><b>Make decisions</b>Judgment calls during execution</div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-head"><div class="sh-num">6</div><div class="sh-name">Monitor</div></div>
+      <div class="story-body">
+        <div class="story-task"><b>Track progress</b>Am I on track? What's left?</div>
+        <div class="story-task"><b>Spot problems</b>Catch issues early</div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-head"><div class="sh-num">7</div><div class="sh-name">Modify</div></div>
+      <div class="story-body">
+        <div class="story-task"><b>Adjust course</b>Iterate based on what you've learned</div>
+        <div class="story-task"><b>Handle exceptions</b>Deal with edge cases</div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-head"><div class="sh-num">8</div><div class="sh-name">Conclude</div></div>
+      <div class="story-body">
+        <div class="story-task"><b>Finish &amp; hand off</b>Package output for the next step</div>
+        <div class="story-task"><b>Document</b>Capture what was done and why</div>
+      </div>
+    </div>
+  </div>
+  <p style="margin-top:16px;font-size:13px;color:var(--text-dim);">Map any role's work to these stages and you get a complete picture of what they need to accomplish — and where the pain points are.</p>
+</div>
+
+<!-- 2: JTBD → AGENTS -->
+<div class="slide slide--light" data-theme="light">
+  <p class="label label--navy">The method</p>
+  <h2 class="title">Jobs to Be Done tells you <span class="accent">what agents to build</span></h2>
+  <p class="subtitle">The same framework works for agent design. An agent is most useful when it helps someone complete a job they already have. Define the job, define the agent.</p>
+  <div class="framework">
+    <div class="framework-card"><div class="num">1</div><h3>Job = Agent</h3><p>Each job becomes one agent. The job statement becomes the agent's purpose.</p></div>
+    <div class="framework-arrow">→</div>
+    <div class="framework-card"><div class="num">2</div><h3>Steps = Instructions</h3><p>The numbered steps within each job become the agent's numbered instructions.</p></div>
+    <div class="framework-arrow">→</div>
+    <div class="framework-card"><div class="num">3</div><h3>Templates = Output</h3><p>The templates you already use become the agent's output format.</p></div>
+  </div>
+  <div class="callout" style="margin-top:24px;">
+    <b>The core insight</b>
+    Don't ask "what can AI do?" — ask "what jobs do people in this role need to get done?" Then build agents for those jobs.
+  </div>
+</div>
+
+<!-- 5: DIVIDER — JOB MAP -->
+<div class="slide slide--cream" data-theme="light">
+  <div class="blob" style="top:-60px;right:-40px;width:350px;height:350px;">
+    <svg viewBox="0 0 200 200"><circle cx="100" cy="60" r="50" fill="#353564"/><circle cx="60" cy="130" r="40" fill="#353564"/><circle cx="140" cy="130" r="40" fill="#353564"/><circle cx="100" cy="100" r="20" fill="#353564"/></svg>
+  </div>
+  <h2 class="title" style="font-size:clamp(36px,5vw,52px);"><span class="accent">Case study:</span><br>UX Design</h2>
+  <p class="subtitle" style="color:var(--text-muted);">We applied this method to UX design at e-conomic. Here's what we found — and what we built.</p>
+</div>
+
+<!-- CASE STUDY: THE UX PROBLEM -->
+<div class="slide slide--light" data-theme="light">
+  <p class="label label--navy">Case study · The problem</p>
+  <h2 class="title">UX work is full of <span class="accent">manual artifact creation</span></h2>
+  <p class="subtitle">Between the creative moments, designers spend most of their time producing structured documents — research plans, pitches, problem definitions, briefs, prototypes, test scripts, handoff specs. Each one follows a pattern.</p>
+  <div class="cards cards--3" style="margin-top:28px;">
+    <div class="card"><div class="card-accent" style="background:var(--navy)"></div><h3>Artifact after artifact</h3><p>Research briefs, opportunity write-ups, pitch decks, design briefs, prototype scaffolds, validation plans, delivery specs — each project produces dozens of structured documents that all follow known templates.</p></div>
+    <div class="card"><div class="card-accent" style="background:var(--navy)"></div><h3>Most of it is assembly</h3><p>The real thinking is a fraction of the effort. The rest is gathering context from previous artifacts, filling in templates, and making sure nothing gets lost along the way.</p></div>
+    <div class="card"><div class="card-accent" style="background:var(--navy)"></div><h3>This is where agents help</h3><p>If an artifact follows a template and draws on existing context, an agent can draft it. JTBD gave us the method to decide which ones to build.</p></div>
+  </div>
+</div>
+
+<!-- CASE STUDY: THE 10/80/10 RULE -->
+<div class="slide slide--light" data-theme="light">
+  <p class="label label--navy">Case study · The opportunity</p>
+  <h2 class="title">The <span class="accent">10 / 80 / 10</span> rule</h2>
+  <p class="subtitle">There are two moments in any design project where AI has no place: when you define the problem, and when you decide if the work is ready to ship. Everything in between? That's where agents earn their keep.</p>
+
+  <div class="rule-bar" id="ruleBar">
+    <div class="rule-segment rule-segment--human" data-rule="first" onclick="toggleRule('first')"><span class="seg-pct">10%</span><span class="seg-label">You</span></div>
+    <div class="rule-segment rule-segment--ai" data-rule="middle" onclick="toggleRule('middle')"><span class="seg-pct">80%</span><span class="seg-label">Agents</span></div>
+    <div class="rule-segment rule-segment--human" data-rule="last" onclick="toggleRule('last')"><span class="seg-pct">10%</span><span class="seg-label">You</span></div>
+  </div>
+
+  <div class="rule-reveal" id="ruleReveal">
+    <div class="rule-reveal__content" id="ruleContent"></div>
+  </div>
+
+  <div class="callout" style="margin-top:20px;">
+    <b>Why this matters</b>
+    When you let AI handle the structured middle, you protect the parts that make you a designer — while reclaiming hours spent on context-gathering and template-filling. The agents don't replace your creativity. They clear the path for it.
+  </div>
+</div>
+
+<!-- CASE STUDY: JOB MAP INTERACTIVE -->
+<div class="slide slide--dark" data-theme="dark">
+  <p class="label label--amber">Case study · UX Design</p>
+  <h2 style="font-size:22px;font-weight:800;color:var(--white);margin-bottom:4px;">The Job Map</h2>
+  <p style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:16px;">Click any job to expand its steps</p>
+  <div class="job-map">
+    <div>
+      <div class="lane-title" style="color:#8B83F0;border-color:#8B83F0;">Discovery</div>
+      <div class="jcard" onclick="this.classList.toggle('open')"><h4>Research a Question <span class="chevron">▾</span></h4><div class="jbody"><p class="jstatement">"When I have a question about how our users work, I want to find the answer so I can make evidence-based design decisions."</p><ol><li><b>Search existing research</b> for prior work</li><li><b>Assess what's known</b> and identify gaps</li><li><b>Refine</b> the research question</li><li><b>Choose</b> a research method</li><li><b>Create</b> a discovery item in the backlog</li><li><b>Write</b> a research brief with interview questions</li></ol></div></div>
+      <div class="jcard" onclick="this.classList.toggle('open')"><h4>Recruit Participants <span class="chevron">▾</span></h4><div class="jbody"><p class="jstatement">"When I have a research brief, I want to quickly shortlist relevant users."</p><ol><li><b>Parse</b> participant criteria from the brief</li><li><b>Search</b> user panel by segment</li><li><b>Search</b> Airtable support tickets</li><li><b>Search</b> sales/onboarding data</li><li><b>Score and rank</b> candidates</li><li><b>Build shortlist</b> — primary + contrast segments</li><li><b>Draft</b> recruitment email</li></ol></div></div>
+      <div class="jcard" onclick="this.classList.toggle('open')"><h4>Find Opportunities <span class="chevron">▾</span></h4><div class="jbody"><p class="jstatement">"When I've completed research, I want to extract validated opportunities."</p><ol><li><b>Analyse</b> research input</li><li><b>Map</b> to JTBD framework</li><li><b>Assess</b> mission alignment</li><li><b>Extract</b> core opportunity</li><li><b>Draft</b> opportunity title & description</li><li><b>Link</b> to discovery item</li><li><b>Add</b> to backlog</li></ol></div></div>
+    </div>
+    <div>
+      <div class="lane-title" style="color:#B794F4;border-color:#B794F4;">Delivery & Design</div>
+      <div class="jcard" onclick="this.classList.toggle('open')"><h4>Write a Pitch <span class="chevron">▾</span></h4><div class="jbody"><p class="jstatement">"When I have a validated opportunity, I want to articulate the business case."</p><ol><li><b>Read</b> the opportunity</li><li><b>Trace</b> upstream to JTBD</li><li><b>Fill</b> Pitch Template v3.0</li><li><b>Present</b> for review</li><li><b>Save</b> to Pitches collection</li></ol></div></div>
+      <div class="jcard" onclick="this.classList.toggle('open')"><h4>Create a Design Brief <span class="chevron">▾</span></h4><div class="jbody"><p class="jstatement">"When a pitch is approved, I want to create a thorough brief."</p><ol><li><b>Trace</b> pitch → opportunity → JTBD → mission</li><li><b>Fill</b> Design Brief 2.1 template</li><li><b>Flag</b> gaps with [NEEDS INPUT]</li><li><b>Structure</b> for LLM context</li><li><b>Present</b> for review</li><li><b>Save</b> to Design Briefs collection</li></ol></div></div>
+      <div class="jcard" onclick="this.classList.toggle('open')"><h4>Generate Prototypes <span class="chevron">▾</span></h4><div class="jbody"><p class="jstatement">"When I have a brief, I want to explore multiple solution directions as prototypes."</p><ol><li><b>Read</b> the design brief</li><li><b>Identify</b> the strategic proposition</li><li><b>Scaffold</b> Vite + React + Taco project</li><li><b>Generate</b> 2–3 alternatives</li><li><b>Build</b> to standalone HTML</li><li><b>Document</b> design rationale</li></ol></div></div>
+    </div>
+    <div>
+      <div class="lane-title" style="color:#5DE8B5;border-color:#5DE8B5;">Validation & Iteration</div>
+      <div class="jcard" onclick="this.classList.toggle('open')"><h4>Validate with Users <span class="chevron">▾</span></h4><div class="jbody"><p class="jstatement">"When I have prototypes, I want to structure how I'll test them."</p><ol><li><b>Analyse</b> the solution(s)</li><li><b>Recommend</b> validation method</li><li><b>Generate</b> test script</li><li><b>Define</b> participant criteria</li><li><b>Create</b> feedback template</li><li><b>Set</b> success criteria</li></ol></div></div>
+      <div class="jcard" onclick="this.classList.toggle('open')"><h4>Iterate on Feedback <span class="chevron">▾</span></h4><div class="jbody"><p class="jstatement">"When I have validation feedback, I want to feed it back into the design."</p><ol><li><b>Structure</b> the feedback</li><li><b>Update</b> the design brief</li><li><b>Regenerate</b> solutions</li><li><b>Compare</b> new vs. previous</li></ol></div></div>
+      <div class="jcard" onclick="this.classList.toggle('open')"><h4>Package for Delivery <span class="chevron">▾</span></h4><div class="jbody"><p class="jstatement">"When design is validated, I want to package a handoff-ready spec."</p><ol><li><b>Read</b> the validated brief</li><li><b>Generate</b> interaction specs</li><li><b>Map</b> to Taco components</li><li><b>Document</b> tokens</li><li><b>Attach</b> validation evidence</li><li><b>Define</b> acceptance criteria</li></ol></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 7: DIVIDER — TRANSLATION -->
+<div class="slide slide--cream" data-theme="light">
+  <div class="blob" style="bottom:-60px;left:-40px;width:300px;height:300px;">
+    <svg viewBox="0 0 200 200"><circle cx="100" cy="60" r="50" fill="#353564"/><circle cx="60" cy="130" r="40" fill="#353564"/><circle cx="140" cy="130" r="40" fill="#353564"/><circle cx="100" cy="100" r="20" fill="#353564"/></svg>
+  </div>
+  <h2 class="title" style="font-size:clamp(36px,5vw,52px);">From <span class="accent">jobs</span><br>to agents</h2>
+  <p class="subtitle" style="color:var(--text-muted);">The steps you already follow become the agent's instructions. Here's how we translated one UX job into a working agent.</p>
+</div>
+
+<!-- 8: WORKED EXAMPLE -->
+<div class="slide slide--light" data-theme="light">
+  <p class="label label--navy">Case study · Translation</p>
+  <h2 style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;">"Research a Question" → Discovery Agent</h2>
+  <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">Left: what the designer does. Right: what the agent does.</p>
+  <div class="comparison" style="border:1px solid rgba(53,53,100,.1);border-radius:12px;">
+    <div class="comp-col comp-col--left">
+      <h3><span class="dot" style="background:var(--text-dim)"></span> Designer's steps</h3>
+      <ol>
+        <li><b>Search existing research</b> for prior answers</li>
+        <li><b>Assess what's known</b> and what gaps remain</li>
+        <li><b>Refine</b> the research question</li>
+        <li><b>Choose</b> a research method</li>
+        <li><b>Create</b> a discovery item in the backlog</li>
+        <li><b>Write</b> a research brief with interview questions</li>
+      </ol>
+    </div>
+    <div class="comp-col comp-col--right">
+      <h3><span class="dot" style="background:var(--amber)"></span> Agent's instructions</h3>
+      <ol>
+        <li><b>Search All Discovery and Opportunities</b> collections</li>
+        <li>If found, <b>present findings</b> and ask if new research is needed</li>
+        <li><b>Refine</b> input into a specific research question</li>
+        <li><b>Suggest</b> the best method (interview, data, diary, usability, survey)</li>
+        <li><b>Add item</b> to All Discovery with JTBD, method, status, owner</li>
+        <li><b>Append</b> research brief, 5–8 questions, participant criteria</li>
+      </ol>
+    </div>
+  </div>
+  <div class="callout" style="margin-top:16px;font-size:13px;">
+    <b>Notice</b>
+    The instructions are almost identical to the steps. The agent just needs the <em>addresses</em> — collection IDs, column IDs, field names.
+  </div>
+</div>
+
+<!-- 9: WIRING -->
+<div class="slide slide--light" data-theme="light">
+  <p class="label label--navy">Case study · Wiring</p>
+  <h2 class="title" style="font-size:clamp(26px,3.5vw,36px);">Inputs, tools, and <span class="accent">handoffs</span></h2>
+  <div class="wiring">
+    <div class="card"><h4>Inputs</h4><p>What does the designer need before starting? A JTBD selection and a research question. These become the agent's input form — the fields to fill before hitting "Deploy".</p></div>
+    <div class="card"><h4>Tools</h4><p>What systems does the designer touch? Slite, Airtable, user panel, Figma. These become the agent's integrations — APIs and MCP connections.</p></div>
+    <div class="card"><h4>Handoffs</h4><p>What does the next step need? The Discovery Agent's output feeds the Recruitment Agent's input. This chaining turns individual agents into a pipeline.</p></div>
+  </div>
+</div>
+
+<!-- 10: PIPELINE -->
+<div class="slide slide--light" data-theme="light">
+  <p class="label label--navy">Case study · The result</p>
+  <h2 style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:16px;">9 jobs → 9 agents: the full <span style="color:var(--amber);">pipeline</span></h2>
+  <table class="ptable">
+    <thead><tr><th>#</th><th>Agent</th><th>Lane</th><th>Input</th><th>Output</th></tr></thead>
+    <tbody>
+      <tr><td>01</td><td>Discovery</td><td><span class="lane lane--disc">Discovery</span></td><td>JTBD + research question</td><td>Discovery item with brief <span class="pto">→ Recruitment</span></td></tr>
+      <tr><td>02</td><td>Recruitment</td><td><span class="lane lane--disc">Discovery</span></td><td>Discovery item link</td><td>Ranked shortlist <span class="pto">→ Designer runs research</span></td></tr>
+      <tr><td>03</td><td>Opportunity</td><td><span class="lane lane--disc">Discovery</span></td><td>Research transcript</td><td>Validated opportunity <span class="pto">→ Pitch</span></td></tr>
+      <tr><td>04</td><td>Pitch</td><td><span class="lane lane--del">Delivery</span></td><td>Opportunity link</td><td>Pitch v3.0 <span class="pto">→ Brief</span></td></tr>
+      <tr><td>05</td><td>Brief</td><td><span class="lane lane--ai">AI + Design</span></td><td>Pitch link</td><td>Design Brief 2.1 <span class="pto">→ Design</span></td></tr>
+      <tr><td>06</td><td>Design</td><td><span class="lane lane--ai">AI + Design</span></td><td>Brief link</td><td>2–3 prototypes <span class="pto">→ Validation</span></td></tr>
+      <tr><td>07</td><td>Validation</td><td><span class="lane lane--val">Validation</span></td><td>Solution link</td><td>Test plan <span class="pto">→ Designer runs tests</span></td></tr>
+      <tr><td>08</td><td>Iteration</td><td><span class="lane lane--ai">AI + Design</span></td><td>Feedback + brief</td><td>Updated prototypes <span class="pto">→ Validation / Solution</span></td></tr>
+      <tr><td>09</td><td>Solution</td><td><span class="lane lane--del">Delivery</span></td><td>Validated brief</td><td>Delivery spec <span class="pto">→ Engineering</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 11: YOUR TURN -->
+<div class="slide slide--cream" data-theme="light">
+  <div class="blob" style="top:-80px;right:-60px;width:400px;height:400px;">
+    <svg viewBox="0 0 200 200"><circle cx="100" cy="60" r="50" fill="#353564"/><circle cx="60" cy="130" r="40" fill="#353564"/><circle cx="140" cy="130" r="40" fill="#353564"/><circle cx="100" cy="100" r="20" fill="#353564"/></svg>
+  </div>
+  <p class="label label--navy">Apply it yourself</p>
+  <h2 class="title">The method works for <span class="accent">any role</span></h2>
+  <p class="subtitle" style="margin-bottom:0;">UX was our case study — but the recipe is the same for sales, support, engineering, ops, or any team with structured, repeating work.</p>
+  <div class="cta-grid">
+    <div class="cta-card"><h3>1. Pick a role</h3><p>Who does structured, repeating work? That's your starting point.</p></div>
+    <div class="cta-card"><h3>2. Map the jobs</h3><p>What are the 5–10 jobs someone in that role needs to get done?</p></div>
+    <div class="cta-card"><h3>3. Write down the steps</h3><p>What do they open, read, fill in, save? Be specific.</p></div>
+    <div class="cta-card"><h3>4. List the tools</h3><p>What systems do they touch? These become the agent's integrations.</p></div>
+    <div class="cta-card"><h3>5. Build the agents</h3><p>Steps become instructions. Templates become output format. The manual process IS the prompt.</p></div>
+  </div>
+  <p style="margin-top:28px;font-size:14px;color:var(--text-dim);font-style:italic;">Next up: a live demo of the UX Agent Hub we built with this method.</p>
+</div>
+
+<!-- 12: DEMO -->
+<div class="slide slide--light" data-theme="light" style="padding:20px 24px;">
+  <p class="label label--navy" style="margin-bottom:8px;">Live demo</p>
+  <h2 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:12px;">The UX Agent Hub</h2>
+  <div style="flex:1;border-radius:12px;overflow:hidden;border:1px solid rgba(53,53,100,.12);box-shadow:0 4px 24px rgba(53,53,100,.08);">
+    <iframe src="index.html" style="width:100%;height:100%;border:none;"></iframe>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progressBar = document.getElementById('progress');
+const counter = document.getElementById('counter');
+let current = 0;
+let animating = false;
+
+function showSlide(n, dir) {
+  if (n < 0 || n >= slides.length || animating) return;
+  animating = true;
+
+  const old = slides[current];
+  const next = slides[n];
+
+  // 1. Disable transitions on the incoming slide so we can position it instantly
+  next.style.transition = 'none';
+  // Position incoming slide off-screen in the direction it will enter from
+  next.style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
+  next.style.opacity = '0';
+
+  // Force reflow so the instant position takes effect
+  void next.offsetWidth;
+
+  // 2. Re-enable transitions on incoming slide
+  next.style.transition = '';
+
+  // 3. Animate old slide out and new slide in
+  old.style.transform = dir > 0 ? 'translateX(-60px)' : 'translateX(60px)';
+  old.style.opacity = '0';
+  old.classList.remove('active');
+
+  next.style.transform = 'translateX(0)';
+  next.style.opacity = '1';
+  next.classList.add('active');
+
+  current = n;
+
+  // 4. Clean up after transition
+  setTimeout(() => {
+    old.style.transform = '';
+    old.style.opacity = '';
+    old.style.transition = '';
+    next.style.transform = '';
+    next.style.opacity = '';
+    animating = false;
+  }, 550);
+
+  // Update controls
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === slides.length - 1;
+  progressBar.style.width = (current / (slides.length - 1) * 100) + '%';
+  counter.textContent = (current + 1) + ' / ' + slides.length;
+
+  // Theme for arrows
+  const theme = next.dataset.theme;
+  document.body.classList.toggle('dark-slide', theme === 'dark');
+}
+
+function go(dir) { showSlide(current + dir, dir); }
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(-1); }
+});
+
+// Touch swipe
+let touchX = 0;
+document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchX;
+  if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1);
+});
+
+// 10/80/10 interactive rule
+const ruleData = {
+  first: { title: 'First 10% — Define', text: 'This is yours. Choosing what problem to solve requires judgment built from experience, taste, and the ability to be accountable for the outcome. No model has that.', theme: 'human' },
+  middle: { title: 'The 80% — Execute', text: 'The grunt work between the creative bookends: gathering context, searching prior research, filling templates, drafting briefs, wiring prototypes. Predictable, structured, and exactly what agents are built for.', theme: 'ai' },
+  last: { title: 'Last 10% — Ship', text: 'Also yours. Deciding whether the work meets the bar is a creative call. You review, refine, and take ownership. Your taste is the quality gate.', theme: 'human' }
+};
+let activeRule = null;
+
+function toggleRule(key) {
+  const reveal = document.getElementById('ruleReveal');
+  const content = document.getElementById('ruleContent');
+  const segments = document.querySelectorAll('.rule-segment');
+
+  if (activeRule === key) {
+    // Close
+    reveal.classList.remove('open');
+    segments.forEach(s => s.classList.remove('selected'));
+    activeRule = null;
+    return;
+  }
+
+  activeRule = key;
+  const d = ruleData[key];
+  content.innerHTML = '<h4>' + d.title + '</h4><p>' + d.text + '</p>';
+  content.className = 'rule-reveal__content' + (d.theme === 'ai' ? ' theme-ai' : '');
+
+  segments.forEach(s => {
+    s.classList.toggle('selected', s.dataset.rule === key);
+  });
+
+  reveal.classList.add('open');
+}
+
+// Init — set first slide visible
+slides[0].classList.add('active');
+prevBtn.disabled = true;
+nextBtn.disabled = slides.length <= 1;
+progressBar.style.width = '0%';
+counter.textContent = '1 / ' + slides.length;
+document.body.classList.toggle('dark-slide', slides[0].dataset.theme === 'dark');
+</script>
+</body>
+</html>

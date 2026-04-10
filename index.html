@@ -222,35 +222,51 @@ const jobs = [
    desc:'I want to trust that the platform I rely on every day is secure, reliable, and compliant — so I can focus on my clients without worrying about data loss, downtime, or regulatory risk.'}
 ];
 const missions = [
-  {name:'Automation',icon:'⚙️',color:'#0891B2',id:'rL_YP9jes6qVnH',
-   desc:'Embed AI-powered automation and smart defaults into core bookkeeping JTBD — from document collection and bank handling through supplier invoices, payroll, and period closing. The engine of efficiency for mass-market AOs.',
+  {name:'Functional Automation',icon:'⚙️',color:'#0891B2',id:'rL_YP9jes6qVnH',
+   desc:'Embed smart defaults and rule-based automation into core bookkeeping JTBD — from document collection and bank handling through supplier invoices, payroll, and period closing. The engine of efficiency for mass-market AOs.',
    outcome:'Save AOs 50% of time spent on core bookkeeping tasks.',
-   jobs:'Collect Documents, Handle Bank, Supplier Invoices, Prioritise Tasks, Overview & Control, Handle Payroll, Period Closing'},
-  {name:'Advisory',icon:'🧠',color:'#7C3AED',id:'ADlV1t-Po9Ie1o',
-   desc:'Transform accountants from bookkeepers into trusted advisors. Surface anomalies proactively and equip AOs with insights and tools to guide their clients on compliance, efficiency, and business strategy.',
+   jobs:'Collect Documents, Handle Bank, Supplier Invoices, Handle Payroll, Period Closing'},
+  {name:'Agentic Automation',icon:'🧠',color:'#7C3AED',id:'ADlV1t-Po9Ie1o',
+   desc:'Deploy AI agents that act on behalf of accountants — surfacing anomalies proactively, advising on compliance and strategy, and prioritising work intelligently across clients.',
    outcome:'Accountants recognised as strategic advisors, not just bookkeepers.',
-   jobs:'Advice About Anomalies, Business Advisory'},
-  {name:'Platform & Partners',icon:'🤝',color:'#059669',id:'7M-oAAd97Ny9Hd',
-   desc:'Strengthen the platform foundation — APIs, security, compliance, mobile — and grow through partnerships. Ensure e-conomic remains the most trusted solution in an agentic future while enabling new integrations and ecosystems.',
-   outcome:'Trusted, secure, and extensible platform supporting all propositions.',
-   jobs:'Simple accounting on Mobile, Trusted Platform'}
+   jobs:'Advice About Anomalies, Business Advisory, Prioritise Tasks, Overview & Control'},
+  {name:'Adjacent & Partners',icon:'🤝',color:'#059669',id:'7M-oAAd97Ny9Hd',
+   desc:'Grow through partnerships and adjacent use cases — mobile-first simple accounting, integrations, and ecosystem plays that extend e-conomic beyond core bookkeeping.',
+   outcome:'New user segments and partner-driven growth.',
+   jobs:'Simple accounting on Mobile'},
+  {name:'Trusted Platform',icon:'🛡️',color:'#6366F1',id:'WQvN8yRSilqrLH',
+   desc:'Strengthen the platform foundation — APIs, security, compliance, and reliability. Ensure e-conomic remains the most trusted solution in an agentic future.',
+   outcome:'Trusted, secure, and extensible platform supporting all missions.',
+   jobs:'Trusted Platform'}
 ];
 
 const agents = [
   {
     id:'discover', num:'01', name:'Discovery Agent', icon:'🔍',
     lane:'Discovery', laneColor:'var(--disc)', bgGlow:'var(--glow-disc)',
-    tagline:'Creates discovery items in your backlog — choose a JTBD, describe your research question, and the agent adds it to the <a href="https://e-conomic.slite.com/app/docs/MFcG0JEQAzh2cI" target="_blank" style="color:var(--ai);text-decoration:none;font-weight:600;">All Discovery collection</a>',
+    tagline:'Searches existing research first — if the answer is already there, you get it instantly. If not, the agent creates a discovery item in your <a href="https://e-conomic.slite.com/app/docs/MFcG0JEQAzh2cI" target="_blank" style="color:var(--ai);text-decoration:none;font-weight:600;">All Discovery collection</a>',
     capabilities:[
-      {title:'JTBD Selection',desc:'Pick from your 11 Jobs to Be Done to scope the research area'},
-      {title:'Research Scoping',desc:'Define what you want to learn — the agent structures it as a discovery item'},
+      {title:'Existing Research Search',desc:'Searches All Discovery and All Opportunities for prior research that may already answer your question'},
+      {title:'Gap Analysis',desc:'If partial answers exist, highlights what\'s covered and what gaps remain before creating new work'},
       {title:'Method Suggestion',desc:'Recommends a research method (interview, diary study, data analysis, usability test, survey)'},
-      {title:'Backlog Creation',desc:'Adds the item to All Discovery in Slite with Job, Method, Status, and Owner'}
+      {title:'Backlog Creation',desc:'Only creates a new discovery item if the question hasn\'t been answered — avoids duplicate research'}
     ],
     inputType:'discover'
   },
   {
-    id:'opportunity', num:'02', name:'Opportunity Agent', icon:'💡',
+    id:'recruit', num:'02', name:'Recruitment Agent', icon:'🎯',
+    lane:'Discovery', laneColor:'var(--disc)', bgGlow:'var(--glow-disc)',
+    tagline:'Takes a discovery brief and finds the best participants from your user panel and Airtable support/sales records — so you can start research fast',
+    capabilities:[
+      {title:'Brief Parsing',desc:'Reads a discovery item from Slite and extracts participant criteria: role, firm size, experience, client portfolio type'},
+      {title:'User Panel Search',desc:'Searches your internal user panel for matching participants based on segmentation criteria'},
+      {title:'Airtable Lookup',desc:'Queries Airtable support tickets and sales form entries to find users who recently experienced relevant pain points'},
+      {title:'Candidate Ranking',desc:'Scores and ranks candidates by relevance, recency of activity, and segment diversity — returns a shortlist with contact details'}
+    ],
+    inputType:'recruit'
+  },
+  {
+    id:'opportunity', num:'03', name:'Opportunity Agent', icon:'💡',
     lane:'Discovery', laneColor:'var(--disc)', bgGlow:'var(--glow-disc)',
     tagline:'Evaluates research inputs against your JTBD framework and missions to create validated opportunities',
     capabilities:[
@@ -262,7 +278,7 @@ const agents = [
     inputType:'opportunity'
   },
   {
-    id:'pitch', num:'03', name:'Pitch Agent', icon:'📋',
+    id:'pitch', num:'04', name:'Pitch Agent', icon:'📋',
     lane:'Delivery', laneColor:'var(--del)', bgGlow:'var(--glow-del)',
     tagline:'Generates delivery pitches from validated opportunities using your Pitch Template v3.0',
     capabilities:[
@@ -274,7 +290,7 @@ const agents = [
     inputType:'pitch'
   },
   {
-    id:'brief', num:'04', name:'Brief Agent', icon:'✏️',
+    id:'brief', num:'05', name:'Brief Agent', icon:'✏️',
     lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
     tagline:'Creates Design Brief 2.1 from pitch + opportunity, scoping the problem and preparing LLM context',
     capabilities:[
@@ -286,19 +302,19 @@ const agents = [
     inputType:'brief'
   },
   {
-    id:'design', num:'05', name:'Design Agent', icon:'🤖',
+    id:'design', num:'06', name:'Design Agent', icon:'🤖',
     lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
-    tagline:'Generates solution proposals using the Taco Web Components design system as structured context',
+    tagline:'Generates coded prototypes using real @economic/taco components — scaffolded with Vite, built to a single HTML file you can open in any browser',
     capabilities:[
-      {title:'Design System Awareness',desc:'Knows every Taco component, variant, token, and layout rule'},
-      {title:'Multi-Solution Generation',desc:'Produces multiple alternatives varying on key dimensions'},
-      {title:'Figma Integration',desc:'Can create wireframe-level designs via Figma MCP'},
-      {title:'Code-Ready Output',desc:'References Storybook-available components for near-instant handoff'}
+      {title:'Real Taco Components',desc:'Uses the actual @economic/taco package (v6) — Layout, Header, Navigation2, Card, Tag, Badge, Alert, Drawer, Table3, and more — not stubs or approximations'},
+      {title:'Standalone HTML Output',desc:'Vite + vite-plugin-singlefile builds a single .html file with all JS and CSS inlined — double-click to open, no server needed'},
+      {title:'Multi-Solution Generation',desc:'Produces 2-3 alternative solutions as separate prototype apps, varying on key dimensions from the brief'},
+      {title:'Figma Integration',desc:'Can also create wireframe-level designs via Figma MCP using the Web Components library'}
     ],
     inputType:'design'
   },
   {
-    id:'validate', num:'06', name:'Validation Agent', icon:'🧪',
+    id:'validate', num:'07', name:'Validation Agent', icon:'🧪',
     lane:'Validation', laneColor:'var(--val)', bgGlow:'var(--glow-val)',
     tagline:'Helps structure customer validation — test design, participant selection, and feedback capture',
     capabilities:[
@@ -310,7 +326,7 @@ const agents = [
     inputType:'validate'
   },
   {
-    id:'iterate', num:'07', name:'Iteration Agent', icon:'🔄',
+    id:'iterate', num:'08', name:'Iteration Agent', icon:'🔄',
     lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
     tagline:'Feeds validation learnings back into the design brief and regenerates refined solutions',
     capabilities:[
@@ -322,12 +338,12 @@ const agents = [
     inputType:'iterate'
   },
   {
-    id:'solution', num:'08', name:'Solution Agent', icon:'✅',
+    id:'solution', num:'09', name:'Solution Agent', icon:'✅',
     lane:'Delivery', laneColor:'var(--del)', bgGlow:'var(--glow-del)',
     tagline:'Packages the validated solution into a delivery-ready specification with component mappings',
     capabilities:[
       {title:'Spec Generation',desc:'Create interaction specs: states, transitions, error handling, edge cases'},
-      {title:'Component Mapping',desc:'Map to exact Taco Web Components with variant properties'},
+      {title:'Component Mapping',desc:'Map to exact Taco React components (@economic/taco) with props'},
       {title:'Token Documentation',desc:'List all color, typography, and spacing tokens applied'},
       {title:'Validation Summary',desc:'Attach customer testing evidence and confidence scores'}
     ],
@@ -457,12 +473,42 @@ function getInputHTML(agent) {
         <div style="margin-top:12px;"><button class="btn btn-primary" style="background:var(--disc)" id="btn-discover" onclick="runDiscover()" disabled>🔍 Deploy Discovery Agent</button></div>
       </div>`;
 
+    case 'recruit': return `
+      <div class="action-body">
+        <h4>1. Link to Discovery Item in Slite</h4>
+        <p>Paste the URL of the discovery item you want to recruit participants for. The agent reads the research brief, questions, and participant criteria.</p>
+        <input type="url" id="inp-recruit-url" placeholder="https://e-conomic.slite.com/app/docs/...">
+        <div class="helper">A discovery item from the All Discovery collection</div>
+        <h4 style="margin-top:14px;">2. Additional criteria (optional)</h4>
+        <p>Add any extra requirements — e.g. "must use bank integration", "firm with 50+ clients", "recently contacted support about VAT".</p>
+        <textarea id="inp-recruit-extra" placeholder="Any additional screening criteria or preferences..." style="min-height:80px;"></textarea>
+        <div class="template-preview">
+          <button class="tpl-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Data Sources & Output <span class="tpl-arrow">▾</span></button>
+          <div class="tpl-content">
+            <div class="tpl-row"><strong>📋 Airtable — Feedback from Support and Sales</strong><div class="tpl-desc">Customer complaints, feature requests, pain points, and sales feedback filtered by topic relevance</div></div>
+            <div class="tpl-row"><strong>👥 User Panel</strong><div class="tpl-desc">Internal panel of opted-in users segmented by role, firm size, and feature usage</div></div>
+            <div class="tpl-row"><strong>📊 Tableau — NPS Data</strong><div class="tpl-desc">NPS scores, verbatim comments, and respondent details filtered by topic and sentiment</div></div>
+            <div class="tpl-row"><strong>✅ Output: Ranked Shortlist</strong><div class="tpl-desc">8–12 candidates scored by relevance, segment diversity, and availability</div></div>
+          </div>
+        </div>
+        <div style="margin-top:12px;"><button class="btn btn-primary" style="background:var(--disc)" id="btn-recruit" onclick="runRecruit()" disabled>🎯 Deploy Recruitment Agent</button></div>
+      </div>`;
+
     case 'opportunity': return `
       <div class="action-body">
-        <h4>Paste interview transcript or research notes</h4>
-        <p>Include participant role, context, and direct quotes for best results. The agent will evaluate the input against your JTBD framework and missions.</p>
-        <textarea id="inp-doc" placeholder="Paste transcript or research notes here..."></textarea>
-        <div class="helper">Supports plain text from Word docs, Google Docs, or any text source.</div>
+        <h4>Link to Dovetail project or interview</h4>
+        <p>Paste a Dovetail URL — either a full research project or a specific interview. The agent will pull insights from Dovetail and create the opportunity.</p>
+        <input type="url" id="inp-dovetail-url" placeholder="https://app.dovetail.com/projects/... or .../interviews/...">
+        <div class="helper">The agent reads all tagged highlights, notes, and transcripts from the linked Dovetail data.</div>
+        <div class="template-preview">
+          <button class="tpl-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Data flow <span class="tpl-arrow">▾</span></button>
+          <div class="tpl-content">
+            <div class="tpl-row"><strong>🕊️ Dovetail Input</strong><div class="tpl-desc">Tagged highlights, interview transcripts, notes, and insight boards from the linked project or interview</div></div>
+            <div class="tpl-row"><strong>🔍 JTBD Mapping</strong><div class="tpl-desc">Maps findings to Jobs, assesses mission alignment</div></div>
+            <div class="tpl-row"><strong>💡 Output: Opportunity</strong><div class="tpl-desc">Created in Slite "All Opportunities" with impact & confidence scores</div></div>
+            <div class="tpl-row"><strong>📸 Output: Interview Snapshot</strong><div class="tpl-desc">Teresa Torres snapshot added to "All Interview Snapshots"</div></div>
+          </div>
+        </div>
         <div style="margin-top:12px;"><button class="btn btn-primary" style="background:var(--disc)" id="btn-opportunity" onclick="runOpportunity()" disabled>💡 Deploy Opportunity Agent</button></div>
       </div>`;
 
@@ -513,13 +559,13 @@ function getInputHTML(agent) {
     case 'design': return `
       <div class="action-body">
         <h4>Link to Design Brief in Slite</h4>
-        <p>Paste the completed design brief. The agent uses it as context along with the Taco Web Components design system to generate solution proposals.</p>
+        <p>Paste the completed design brief. The agent uses it as context along with the Taco design system (@economic/taco) to generate coded HTML prototypes you can open directly in a browser.</p>
         <input type="url" id="inp-design-url" placeholder="https://e-conomic.slite.com/app/docs/...">
         <div class="helper">A completed Design Brief 2.1 with Foundations checklist done</div>
         <div class="template-preview">
           <button class="tpl-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Design System Context <span class="tpl-arrow">▾</span></button>
           <div class="tpl-content">
-            <div class="tpl-row"><strong>🧩 Component Catalog</strong><div class="tpl-desc">All Taco Web Components with variants and usage rules</div></div>
+            <div class="tpl-row"><strong>🧩 Component Catalog</strong><div class="tpl-desc">All Taco React components (@economic/taco) with props and usage patterns</div></div>
             <div class="tpl-row"><strong>🎨 Design Tokens</strong><div class="tpl-desc">Color, typography, spacing from Taco Design Tokens</div></div>
             <div class="tpl-row"><strong>📐 Layout Rules</strong><div class="tpl-desc">Grid systems (Screen, Screen + Sidebar) and spacing</div></div>
             <div class="tpl-row"><strong>📦 Storybook Flags</strong><div class="tpl-desc">What's implemented vs. Figma-only</div></div>
@@ -584,45 +630,37 @@ function switchTab(btn, panelId) {
 function getTime() { return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
 function extractId(url) { const m=url.match(/docs\/([a-zA-Z0-9_-]+)/); return m?m[1]:url; }
 
-// Track the Claude popup window so we can reuse it
-let claudePopup = null;
-const POPUP_W = 560, POPUP_H = 700;
-
+// Deep link to e-conomic AI desktop app
 function showResult(agentId, prompt) {
   const area = document.getElementById('resultArea-'+agentId);
   area.classList.add('visible');
   area.innerHTML = `
     <h4 style="color:var(--success);">✅ Agent Deployed</h4>
-    <p style="font-size:12px;color:var(--dim);margin-bottom:8px;">Claude opened in a popup window with your prompt. Check it and hit send.</p>
+    <p style="font-size:12px;color:var(--dim);margin-bottom:8px;">e-conomic AI opened — prompt copied to clipboard. Press <kbd style="background:rgba(0,0,0,.08);padding:1px 5px;border-radius:3px;font-size:11px;font-family:inherit;">⌘N</kbd> then <kbd style="background:rgba(0,0,0,.08);padding:1px 5px;border-radius:3px;font-size:11px;font-family:inherit;">⌘V</kbd> to start.</p>
     <details style="margin-top:4px;">
       <summary style="font-size:12px;color:var(--muted);cursor:pointer;">View generated prompt</summary>
       <textarea id="prompt-${agentId}" readonly style="margin-top:6px;">${prompt}</textarea>
       <div style="margin-top:6px;display:flex;gap:8px;">
-        <button class="btn btn-ghost" style="font-size:12px;" onclick="openClaudePopup('prompt-${agentId}',this)">🔄 Re-open in Claude</button>
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="launchEcoAI('prompt-${agentId}',this)">🚀 Re-open in e-conomic AI</button>
         <button class="btn btn-ghost" style="font-size:12px;" onclick="copyOnly('prompt-${agentId}',this)">📋 Copy</button>
       </div>
     </details>
   `;
-  // Auto-launch Claude popup
-  launchClaudeWithPrompt(prompt);
+  // Auto-launch e-conomic AI
+  launchEcoAIWithPrompt(prompt);
 }
-function launchClaudeWithPrompt(prompt) {
-  // Copy to clipboard as backup
-  navigator.clipboard.writeText(prompt).catch(()=>{});
-  // Calculate popup position: right side of screen, vertically centered
-  const left = window.screenX + window.outerWidth - POPUP_W - 40;
-  const top = window.screenY + Math.round((window.outerHeight - POPUP_H) / 2);
-  const features = `width=${POPUP_W},height=${POPUP_H},left=${left},top=${top},resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=yes`;
-  const encoded = encodeURIComponent(prompt);
-  const url = 'https://claude.ai/new?q=' + encoded;
-  // Open (or reuse) the popup
-  claudePopup = window.open(url, 'claude_agent_popup', features);
-  if(claudePopup) claudePopup.focus();
+function launchEcoAIWithPrompt(prompt) {
+  // Copy prompt to clipboard, then open the app via deep link
+  navigator.clipboard.writeText(prompt).then(()=>{
+    window.location.href = 'ecoai://';
+  }).catch(()=>{
+    window.location.href = 'ecoai://';
+  });
 }
-function openClaudePopup(id, btn) {
+function launchEcoAI(id, btn) {
   const prompt = document.getElementById(id).value;
-  launchClaudeWithPrompt(prompt);
-  btn.textContent='✅ Opened!';setTimeout(()=>{btn.innerHTML='🔄 Re-open in Claude';},2000);
+  launchEcoAIWithPrompt(prompt);
+  btn.textContent='✅ Opened!';setTimeout(()=>{btn.innerHTML='🚀 Re-open in e-conomic AI';},2000);
 }
 function copyOnly(id, btn) {
   const prompt = document.getElementById(id).value;
@@ -650,6 +688,41 @@ ${text}
 ---
 
 **AGENT INSTRUCTIONS:**
+
+**STEP 0 — SEARCH EXISTING RESEARCH FIRST (mandatory before creating anything)**
+Before proposing new research, check whether the answer already exists across all available sources:
+
+**0a. Slite (internal research & opportunities)**
+1. Search the "All Discovery" collection (Slite ID: MFcG0JEQAzh2cI) for discovery items related to the "${job}" job. Use search-notes and list the results.
+2. Also search the "All Opportunities" collection (Slite ID: 0CBSdHnBH530nI) for opportunities that may contain relevant findings.
+3. For any promising matches, read the full note to check if the research question has already been answered — look for Key Findings, interview summaries, or data analysis results.
+
+**0b. Dovetail (past user research — last 12 months)**
+4. Search Dovetail for any research projects, interview highlights, tags, or insights from the last 12 months that relate to the "${job}" job and the research question. Look for:
+   - Tagged highlights or quotes from user interviews
+   - Research project summaries and findings
+   - Insight boards or themes that match the topic
+   - Any existing evidence that answers or partially answers the question
+
+**0c. Airtable (support & sales feedback)**
+5. Search the Airtable "Feedback from Support and Sales" sheet for entries related to the research question and the "${job}" job. Look for:
+   - Customer complaints, feature requests, or pain points reported by support
+   - Sales feedback on lost deals, objections, or unmet needs
+   - Patterns in feedback frequency or severity that relate to the topic
+   - Filter for entries from the last 12 months where possible
+
+**0d. Synthesise and decide**
+6. **If existing research answers the question (fully or partially):**
+   - Present a summary of what was found across all sources (Slite, Dovetail, Airtable), with links where available
+   - Highlight which parts of the question are already answered and which gaps remain
+   - Note the strength of evidence: how many sources corroborate, how recent the data is, and whether it's qualitative or quantitative
+   - Ask the user: "This existing research covers [X]. Would you still like to create a new discovery item to explore [remaining gaps], or is this sufficient?"
+   - Only proceed to create a new discovery item if the user confirms there are unanswered aspects
+7. **If no relevant existing research is found:**
+   - Let the user know: "I searched [N] discovery items, [M] opportunities in Slite, Dovetail research from the last 12 months, and the Airtable support/sales feedback — nothing covers this question yet. I'll create a new discovery item."
+   - Proceed with the steps below
+
+**STEP 1 — CREATE DISCOVERY ITEM (only if needed after Step 0)**
 1. Read the research question and refine it into a clear, specific discovery item title (a question format works best)
 2. Based on the nature of the question, suggest the most appropriate research method:
    - "User interview" — for understanding behaviors, motivations, and context
@@ -693,33 +766,123 @@ ${text}
   showResult('discover',prompt);
 }
 
-function runOpportunity() {
-  const content=document.getElementById('inp-doc').value.trim();
-  if(!content){alert('Please paste your transcript or notes.');return;}
-  const prompt=`💡 OPPORTUNITY AGENT — DEPLOY
+function runRecruit() {
+  const url=document.getElementById('inp-recruit-url').value.trim();
+  const extra=document.getElementById('inp-recruit-extra').value.trim();
+  if(!url){alert('Please paste a discovery item link.');return;}
+  const noteId=extractId(url);
+  const prompt=`🎯 RECRUITMENT AGENT — DEPLOY
 
-**Source:** Interview transcript / research notes
+**Discovery Item:** ${url}
+**Note ID:** ${noteId}
 **Submitted:** ${new Date().toLocaleString('en-GB')}
-
----
-**INPUT:**
-${content}
+${extra?`\n**Additional Criteria:**\n${extra}\n`:''}
 ---
 
 **AGENT INSTRUCTIONS:**
-1. Evaluate against JTBD framework (Slite: wCYzIJKe_leay1)
-2. Map to Jobs: ${jobs.map(j=>j.name).join(', ')}
-3. Assess Proposition alignment: Automation, Advisory, Platform & Partners
-4. Extract core customer problem / unmet need
-5. Draft opportunity title + description
-6. Suggest Impact and Confidence scores
-7. Search the "All Discovery" collection (Slite ID: MFcG0JEQAzh2cI, format: collection) for discovery items that match the same Job and are related to the opportunity's topic. If a matching discovery item exists, note its URL to link it in step 8.
-8. Add to "All Opportunities" collection (Slite ID: 0CBSdHnBH530nI)
+
+**Phase 1 — Understand the research need**
+1. Read the discovery item from Slite (${noteId}) — extract the research brief, research question, suggested interview questions, and participant segmentation criteria.
+2. Parse the required participant profile:
+   - Role (e.g. accountant, bookkeeper, firm owner)
+   - Experience level (junior / senior / mixed)
+   - Firm size and client portfolio type
+   - Specific feature usage or pain points relevant to the research
+
+**Phase 2 — Search data sources for qualified candidates**
+3. Search **Airtable — "Feedback from Support and Sales"** sheet:
+   - Find customers who have submitted feedback related to the discovery topic
+   - Look for complaints, feature requests, and pain points that match the research area
+   - Flag users who expressed frustration or described workarounds — these are high-value interview candidates
+   - Extract contact details, firm info, and the feedback context
+4. Search the **User Panel**:
+   - Filter by role, firm size, and segment attributes matching the participant profile
+   - Prioritise users who have opted in to research participation
+   - Check last contact date to avoid over-recruiting the same people
+   - Cross-reference with Airtable results to avoid duplicates
+5. Search **Tableau — NPS Data**:
+   - Pull NPS responses from the last 6 months related to the research topic
+   - Look for detractors (score 0–6) and passives (7–8) who left verbatim comments relevant to the discovery area — these users have experienced the pain first-hand
+   - Also note promoters (9–10) who left relevant comments — useful as contrast participants
+   - Extract respondent details, scores, and verbatim comments
+
+**Phase 3 — Score, rank, and shortlist**
+6. Deduplicate candidates across all three sources. If a user appears in multiple sources, merge their data and note the overlap (appearing in multiple sources = stronger signal).
+7. **Score and rank** all candidates on:
+   - Relevance (how well they match the participant criteria) — 40%
+   - Evidence strength (feedback depth, NPS comments, support detail) — 25%
+   - Diversity (ensure mix of firm sizes, experience levels, NPS segments) — 20%
+   - Availability (not recently contacted for research) — 15%
+8. Return a **shortlist of 8–12 candidates** with:
+   - Name, email, role, firm name & size
+   - Match score and primary reason for selection
+   - Source(s) (Airtable / User Panel / NPS) and key data from each
+   - NPS score and verbatim quote (if from Tableau)
+   - Feedback summary (if from Airtable)
+   - Last research participation date (if known)
+9. Group candidates into:
+   - **Primary segment** (6–8): best matches for the core research question, prioritising users with direct experience of the pain
+   - **Contrast segment** (2–4): deliberately different profiles (e.g. promoters vs detractors, different firm sizes) for diverse perspectives
+
+**Phase 4 — Prepare outreach**
+10. Draft a **recruitment email template** tailored to the research topic that the UX designer can personalise and send directly.
+11. Confirm with the full shortlist summary and offer to export to a spreadsheet.`;
+  showResult('recruit',prompt);
+}
+
+function runOpportunity() {
+  const url=document.getElementById('inp-dovetail-url').value.trim();
+  if(!url){alert('Please paste a Dovetail URL.');return;}
+  const prompt=`💡 OPPORTUNITY AGENT — DEPLOY
+
+**Source:** Dovetail
+**Dovetail URL:** ${url}
+**Submitted:** ${new Date().toLocaleString('en-GB')}
+
+---
+
+**AGENT INSTRUCTIONS:**
+
+**Phase 1 — Read Dovetail data**
+1. Open the Dovetail URL above. Determine if it's a research project or a specific interview.
+2. If it's a **project**: read all interviews, tagged highlights, notes, tags, and any insight boards within the project. Summarise the key themes, patterns, and notable quotes across participants.
+3. If it's a **specific interview**: read the full transcript, all tagged highlights, notes, and any linked insights. Extract the participant's role, context, key quotes, desires, and pain points.
+4. Compile a structured summary of findings:
+   - Participants & roles
+   - Top pain points and unmet needs (with verbatim quotes)
+   - Recurring themes and patterns
+   - Any existing tags or insights already created in Dovetail
+
+**Phase 2 — Map to JTBD & create opportunity**
+5. Evaluate findings against JTBD framework (Slite: wCYzIJKe_leay1)
+6. Map to Jobs: ${jobs.map(j=>j.name).join(', ')}
+7. Assess Mission alignment: Functional Automation, Agentic Automation, Adjacent & Partners, Trusted Platform
+8. Extract core customer problem / unmet need from the Dovetail data
+9. Draft opportunity title + description
+10. Suggest Impact and Confidence scores (based on evidence strength from the Dovetail data — number of participants, consistency of theme, severity of pain)
+11. Search the "All Discovery" collection (Slite ID: MFcG0JEQAzh2cI, format: collection) for discovery items that match the same Job and are related to the opportunity's topic. If a matching discovery item exists, note its URL to link it in step 12.
+12. Add to "All Opportunities" collection (Slite ID: 0CBSdHnBH530nI)
    - Set field "Created Date" (column ID: ZoUKJBd_3p) to today's date (${new Date().toISOString().split('T')[0]})
    - Set Status to "Idea"
    - Set Owner (column ID: 56fedd3d-a715-4bc6-ae4c-2c64a2922db6) to the current Slite user. Use get-user to find the logged-in user and assign them.
-9. If a related discovery item was found in step 7, update that discovery item's "Linked Opportunity" field (column ID: WwKQmnJqK7) with the URL of the newly created opportunity.
-10. Confirm with link, and mention which discovery item was linked (if any).`;
+13. If a related discovery item was found in step 11, update that discovery item's "Linked Opportunity" field (column ID: WwKQmnJqK7) with the URL of the newly created opportunity.
+
+**Phase 3 — Create interview snapshot(s)**
+14. For each interview/participant found in the Dovetail data, create an Interview Snapshot in the "All Interview Snapshots" collection (Slite ID: BN5ADUt49tHfNA) based on Teresa Torres' interview snapshot method:
+   - Title: A short descriptive title summarising the participant's story
+   - Set "Job to Be Done" (column ID: NB9s0NSKlO) to the matched JTBD from step 6
+   - Set "Interview Date" (column ID: hzv0c-t6Ay) to the interview date from Dovetail (or today if unavailable: ${new Date().toISOString().split('T')[0]})
+   - Set "Participant" (column ID: kz6GE1YJUn) to the participant's name or role
+   - Set "Key Quote" (column ID: xqvjVBYEr2) to the most impactful verbatim quote
+   - Set "Desire" (column ID: cUrHLvdENN) to what the participant was trying to achieve
+   - Set "Pain Point" (column ID: pbcyv2tkT1) to what prevented them or made it difficult
+   - Set "Context" (column ID: 7zE6SAJGyR) to the situation/circumstances
+   - Set "Linked Opportunity" (column ID: F2V304f88-) to the URL of the opportunity created in step 12
+   - Set "Linked Discovery" (column ID: QJEhj_pxxZ) to the URL of the matching discovery item (if found in step 11)
+   - In the snapshot's body content, write the full interview snapshot narrative in Teresa Torres' format.
+
+**Phase 4 — Confirm**
+15. Confirm with links to the opportunity, all interview snapshots created, and mention which discovery item was linked (if any). Include a brief summary of the key evidence from Dovetail that supports the opportunity.`;
   showResult('opportunity',prompt);
 }
 
@@ -790,17 +953,17 @@ function runDesign() {
   const url=document.getElementById('inp-design-url').value.trim();
   if(!url){alert('Please paste a design brief link.');return;}
   const noteId=extractId(url);
-  const prompt=`🤖 DESIGN AGENT — DEPLOY
+  const prompt=`DESIGN AGENT — DEPLOY
 
 **Design Brief:** ${url}
 **Note ID:** ${noteId}
 
 **AGENT INSTRUCTIONS:**
 1. Read the completed Design Brief from Slite (${noteId})
-2. Load Taco Web Components design system context (SKILL.md)
+2. Run the /setup-taco-app skill to scaffold a Vite + React + TypeScript app with real @economic/taco components
 3. Identify which strategic proposition this design serves based on the JTBD:
 
-   **AUTOMATION** (Jobs: Collect Documents, Handle Bank, Supplier Invoices, Prioritise Tasks, Overview & Control, Handle Payroll, Period Closing)
+   **FUNCTIONAL AUTOMATION** (Jobs: Collect Documents, Handle Bank, Supplier Invoices, Handle Payroll, Period Closing)
    Design principles:
    - Minimize clicks and decisions — every interaction should feel like the system already knows what to do
    - Default to smart automation with human override, not human action with automation assist
@@ -810,7 +973,7 @@ function runDesign() {
    - Design for "reviewed in 10 seconds, not built in 10 minutes"
    - North Star: Hours Saved per AO/month — every design choice should demonstrably reduce time on task
 
-   **ADVISORY** (Jobs: Advice About Anomalies, Business Advisory)
+   **AGENTIC AUTOMATION** (Jobs: Advice About Anomalies, Business Advisory, Prioritise Tasks, Overview & Control)
    Design principles:
    - Present insights, not just data — the AO should see the story, not a spreadsheet
    - Design for the AO-to-client conversation: outputs should be shareable, explainable, and professional
@@ -818,74 +981,88 @@ function runDesign() {
    - Build trust through transparency: show reasoning, sources, and confidence behind every recommendation
    - Support the AO's expertise, don't replace it — frame AI suggestions as "here's what I noticed" not "here's what to do"
    - Enable the AO to add their professional judgement before presenting to clients
-   - North Star: WAU (Freemium → Paid conversion %) — designs should make advisory feel valuable and worth paying for
+   - North Star: WAU (Freemium to Paid conversion %) — designs should make advisory feel valuable and worth paying for
 
-   **PLATFORM/PARTNERS** (Jobs: Simple accounting on Mobile, Trusted Platform)
+   **ADJACENT & PARTNERS** (Jobs: Simple accounting on Mobile)
+   Design principles:
+   - Mobile: design for triage and quick actions, not full workflows — the desk is where deep work happens
+   - Partner integrations should feel native, not bolted on — seamless data flow is the baseline
+   - Design for new user segments who may not be accounting professionals
+
+   **TRUSTED PLATFORM** (Jobs: Trusted Platform)
    Design principles:
    - Reliability and trust are the primary UX — every element should communicate stability and security
-   - Mobile: design for triage and quick actions, not full workflows — the desk is where deep work happens
    - Platform: make the invisible visible — uptime, data integrity, compliance status should be glanceable
    - Extensibility: design patterns that third parties can build on without breaking consistency
    - Progressive trust: let AOs verify before they rely — show audit trails, calculation breakdowns, change logs
    - Respect that AOs stake their professional reputation on this platform
    - North Star: 3rd Party Agents in Marketplace (ecosystem ARR) — design for an ecosystem, not just a product
 
-4. Using the brief + proposition principles as context, generate a **coded HTML prototype** for each solution.
+4. Using the brief + proposition principles as context, generate a **coded React prototype** for each solution.
 
-   **OUTPUT FORMAT: Single-file HTML prototype**
-   Each solution must be a working, interactive HTML file that the UX designer can open in a browser.
+   **BUILD PIPELINE: Real @economic/taco components, built to standalone HTML**
 
-   **Taco Web Components — use these exact elements:**
-   - \`<adesy-button appearance="primary|default|ghost|discrete|danger">\` — Buttons (add \`icon-left\` or \`icon-right\` attribute for icons, \`disabled\` for disabled state)
-   - \`<adesy-icon-button appearance="primary|default|ghost|discrete|danger">\` — Icon-only buttons (32×32)
-   - \`<adesy-input-field label="..." placeholder="...">\` — Text inputs (280–320px short, 400–600px long, 600–720px max)
-   - \`<adesy-text-area label="..." placeholder="...">\` — Multi-line text input
-   - \`<adesy-dropdown label="...">\` with \`<adesy-option>\` children — Select dropdowns
-   - \`<adesy-radio-button-group>\` with \`<adesy-radio-button>\` — Radio selections
-   - \`<adesy-toggle>\` — On/off switch (Figma only — note in comments)
-   - \`<adesy-data-table>\` with \`<adesy-column>\` and row data — Full data tables with sorting, selection
-   - \`<adesy-table-bulk-action-bar>\` — Floating action bar for selected table rows
-   - \`<adesy-tag appearance="..." label="...">\` — Status tags, labels, chips
-   - \`<adesy-tabs>\` with \`<adesy-tab>\` children — Tab navigation
-   - \`<adesy-topbar-navigation>\` — Top app navigation bar
-   - \`<adesy-pagination>\` — Page navigation for tables
-   - \`<adesy-accordion-group>\` with \`<adesy-accordion>\` — Collapsible sections
-   - \`<adesy-card>\` — Content container cards (left-aligned CTAs only)
-   - \`<adesy-menu-button>\` — Button with dropdown menu
-   - \`<adesy-avatar>\` — User avatar (image or initials)
-   - \`<adesy-donut-chart>\` — Proportional data chart
-   - \`<adesy-column-filter>\` — Column filter popover for tables
-   - \`<adesy-divider>\` — Horizontal section separator
+   Use the /setup-taco-app skill to scaffold the project, then write your prototype in src/App.tsx using real taco imports:
 
-   **Design tokens (CSS custom properties):**
-   - Colors: \`--color-button-surface-primary\`, \`--color-button-surface-hover\`, \`--color-button-surface-tertiary\`
-   - Use the Taco token naming pattern \`--color/{category}/{property}\`
-   - Typography: \`--font-size-interactive-button-s\`, \`--font-size-interactive-button-xs\`
+   \\\`\\\`\\\`tsx
+   import { Button, Card, Tag, Badge, Alert, Tabs, Layout, Header, Navigation2, Drawer, Spinner, SearchInput, Table3 } from '@economic/taco';
+   \\\`\\\`\\\`
+
+   **UI DESIGN RULES (mandatory):**
+   - NEVER use emoji characters anywhere in the UI — not in labels, navigation, status indicators, or data. Use taco Icon component or plain text instead.
+   - For any informational, warning, success, or error banner, use the Alert component (not Banner). Alert accepts state="information"|"warning"|"success"|"error" and an optional title prop.
+
+   **Key component APIs (correct prop names — get these right):**
+   - \`Alert\` — props: \`state\` (information|warning|success|error), \`title\` (optional string), \`onClose\`
+   - \`Button\` — props: \`appearance\` (primary|default|ghost|discrete|danger), \`disabled\`, \`fluid\`, \`onClick\`
+   - \`Card\` with \`Card.Content\` — props: \`title\` (string|JSX, required), Card.Content: \`noPadding\`
+   - \`Drawer\` with \`Drawer.Content\` — props: \`open\`, \`onChange\` (not onOpenChange), \`size\` (sm|md|lg)
+   - \`Tag\` — props: \`color\` (green|yellow|red|blue|purple|brown|pink|orange|grey), \`children\` (string)
+   - \`Badge\` — props: \`color\` (same as Tag)
+   - \`Spinner\` — props: \`delay\`, \`label\` (NO size prop)
+   - \`Navigation2.Link\` — props: \`active\`, \`href\`, \`onClick\`, \`icon\`
+   - \`Navigation2.Group\` — props: \`heading\` (not title), \`defaultExpanded\`
+   - \`Layout\` — wrap Layout.Sidebar + Layout.Content in \`<div className="flex flex-grow overflow-hidden">\` (critical for correct height)
+   - \`Table3\` — renders as CSS grid; add \`#table-id { width: 100%; }\` in CSS
+   - \`SearchInput\` — extends InputProps with \`onSearch\` callback
+
+   **Building to standalone HTML (after writing the prototype):**
+
+   1. Install vite-plugin-singlefile: \`npm install vite-plugin-singlefile\`
+   2. Update vite.config.ts:
+   \\\`\\\`\\\`ts
+   import { viteSingleFile } from 'vite-plugin-singlefile'
+   // Add to plugins array: viteSingleFile()
+   // Add build options: target: 'es2015', modulePreload: false,
+   //   rollupOptions: { output: { inlineDynamicImports: true, format: 'iife' } }
+   \\\`\\\`\\\`
+   3. Run \`npx vite build\`
+   4. Post-process the output: move the <script> tag from <head> to after <div id="root"> in <body>
+      (The singlefile plugin inlines JS into <head>, but React needs #root to exist first)
+   5. The resulting single HTML file can be opened directly via file:// in any browser
 
    **Layout rules:**
-   - Without sidebar: use CSS grid matching Screen Grid Layout (max-width breakpoints)
-   - With sidebar: use CSS grid matching Screen + Sidebar Grid Layout
-   - Page layout spacing must follow the Web Components Grid system
+   - Use Layout with Layout.Sidebar + Layout.Content for pages with navigation
+   - Use Card for content sections within pages
+   - Form input widths: 280-320px (short), 400-600px (long), 600-720px (max)
 
    **Prototype requirements:**
-   - Self-contained single HTML file (inline CSS + JS)
-   - Use Web Component tag names as specified above (even if not registered — they render as custom elements and show intent)
-   - Include realistic sample data that matches the JTBD context (real-looking AO names, client names, Danish accounting terms)
+   - Include realistic sample data matching the JTBD (real-looking AO names, client names, Danish accounting terms)
    - Make interactions work: tabs switch, accordions expand, buttons show hover states, tables can sort
-   - Add CSS that approximates the Taco design tokens (neutral greys, blue primary, clean sans-serif typography)
    - Comment each section with which proposition principle it addresses
    - Include a header comment block listing: JTBD, Proposition, Key principles applied
 
    **Do NOT:**
-   - Use VUD components (deprecated)
-   - Use components prefixed with \`🧩 BASE BLOCKS_\`
-   - Use Toggle or multi-select Dropdown in production (Figma only — flag in comments)
+   - Use emojis anywhere in the UI
+   - Use Banner component — use Alert instead
+   - Use deprecated VUD components
+   - Use Toggle in production (not yet in Storybook — flag in comments if needed)
 
-5. Generate 2-3 alternative solutions as separate HTML files, varying on key dimensions from the brief
-6. For each solution: include an inline comment block explaining layout decisions, component choices, interaction flow, and how it addresses the core problem through the lens of its proposition
+5. Generate 2-3 alternative solutions as separate prototype apps, varying on key dimensions from the brief
+6. For each solution: include a comment block explaining layout decisions, component choices, interaction flow, and how it addresses the core problem through the lens of its proposition
 7. If Figma MCP is available, also offer to create the design in Figma using the exact component keys from the design system
 8. Present solutions for review, noting how each scores against the relevant North Star metric
-9. Save each prototype as a separate HTML file so the designer can open, review, and share them`;
+9. Include realistic sample data matching the JTBD context (real-looking AO names, client names, Danish accounting terms)`;
   showResult('design',prompt);
 }
 
@@ -953,7 +1130,7 @@ ${figma?'2. Read Figma design via MCP for component details':'2. Use solution de
 3. Generate Solution Scope containing:
    - Final design description with all component references
    - Interaction specs: states, transitions, error handling, edge cases
-   - Component mapping: exact Taco Web Components + variant properties
+   - Component mapping: exact Taco React components (@economic/taco) + props
    - Token references: all color, typography, spacing tokens
    - Validation evidence: customer testing summary + confidence
    - Acceptance criteria: updated from brief with validation learnings
@@ -973,7 +1150,8 @@ function selectAgent(i) {
 // ──────────────────── INPUT VALIDATION ────────────────────
 const inputRules = {
   discover:    {btn:'btn-discover',    required:[{id:'inp-discover-job',type:'select'},{id:'inp-discover-text',type:'text'}]},
-  opportunity: {btn:'btn-opportunity', required:[{id:'inp-doc',type:'text'}]},
+  recruit:     {btn:'btn-recruit',      required:[{id:'inp-recruit-url',type:'text'}]},
+  opportunity: {btn:'btn-opportunity', required:[{id:'inp-dovetail-url',type:'text'}]},
   pitch:       {btn:'btn-pitch',       required:[{id:'inp-pitch-url',type:'text'}]},
   brief:       {btn:'btn-brief',       required:[{id:'inp-brief-url',type:'text'}]},
   design:      {btn:'btn-design',      required:[{id:'inp-design-url',type:'text'}]},
