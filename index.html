@@ -24,9 +24,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 
 /* Layout */
-.layout{display:grid;grid-template-columns:260px 1fr 300px;height:calc(100vh - var(--header-h,72px));position:sticky;top:var(--header-h,72px);}
-@media(max-width:1200px){.layout{grid-template-columns:260px 1fr;}.right-panel{display:none;}}
-@media(max-width:900px){.layout{grid-template-columns:1fr;}.right-panel{display:none;}}
+.layout{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - var(--header-h,72px));position:sticky;top:var(--header-h,72px);}
+.right-panel{display:none;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
 
 /* Agent sidebar */
 .sidebar{border-right:1px solid var(--border);padding:16px 0;overflow-y:auto;background:#FFFFFF;}
@@ -34,6 +34,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .agent-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 20px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;border-left:3px solid transparent;}
 .agent-btn:hover{background:rgba(0,0,0,.03);color:var(--text);}
 .agent-btn.active{background:rgba(0,0,0,.04);color:var(--text);border-left-color:var(--ai);}
+.agent-btn.disabled{opacity:.45;cursor:not-allowed;position:relative;}
+.agent-btn.disabled:hover{background:none;color:var(--muted);}
+.agent-btn.disabled::after{content:attr(data-tooltip);position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);background:#1E293B;color:#fff;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:500;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+.agent-btn.disabled::before{content:'';position:absolute;left:calc(100% + 2px);top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:#1E293B;opacity:0;pointer-events:none;transition:opacity .15s;z-index:100;}
+.agent-btn.disabled:hover::after,.agent-btn.disabled:hover::before{opacity:1;}
 .agent-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
 .agent-btn-text .agent-name{font-weight:600;display:block;}
 .agent-btn-text .agent-lane{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
@@ -290,7 +295,7 @@ const agents = [
     inputType:'pitch'
   },
   {
-    id:'brief', num:'05', name:'Brief Agent', icon:'✏️',
+    id:'brief', num:'05', name:'Brief Agent', icon:'✏️', disabled:true,
     lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
     tagline:'Creates Design Brief 2.1 from pitch + opportunity, scoping the problem and preparing LLM context',
     capabilities:[
@@ -302,7 +307,7 @@ const agents = [
     inputType:'brief'
   },
   {
-    id:'design', num:'06', name:'Design Agent', icon:'🤖',
+    id:'design', num:'06', name:'Design Agent', icon:'🤖', disabled:true,
     lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
     tagline:'Generates coded prototypes using real @economic/taco components — scaffolded with Vite, built to a single HTML file you can open in any browser',
     capabilities:[
@@ -314,7 +319,7 @@ const agents = [
     inputType:'design'
   },
   {
-    id:'validate', num:'07', name:'Validation Agent', icon:'🧪',
+    id:'validate', num:'07', name:'Validation Agent', icon:'🧪', disabled:true,
     lane:'Validation', laneColor:'var(--val)', bgGlow:'var(--glow-val)',
     tagline:'Helps structure customer validation — test design, participant selection, and feedback capture',
     capabilities:[
@@ -326,7 +331,7 @@ const agents = [
     inputType:'validate'
   },
   {
-    id:'iterate', num:'08', name:'Iteration Agent', icon:'🔄',
+    id:'iterate', num:'08', name:'Iteration Agent', icon:'🔄', disabled:true,
     lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
     tagline:'Feeds validation learnings back into the design brief and regenerates refined solutions',
     capabilities:[
@@ -338,7 +343,7 @@ const agents = [
     inputType:'iterate'
   },
   {
-    id:'solution', num:'09', name:'Solution Agent', icon:'✅',
+    id:'solution', num:'09', name:'Solution Agent', icon:'✅', disabled:true,
     lane:'Delivery', laneColor:'var(--del)', bgGlow:'var(--glow-del)',
     tagline:'Packages the validated solution into a delivery-ready specification with component mappings',
     capabilities:[
@@ -357,7 +362,7 @@ let currentAgent = 0;
 function renderSidebar() {
   const el = document.getElementById('agentList');
   el.innerHTML = agents.map((a,i) => `
-    <button class="agent-btn ${i===currentAgent?'active':''}" onclick="selectAgent(${i})" style="${i===currentAgent?'border-left-color:'+a.laneColor:''}">
+    <button class="agent-btn ${i===currentAgent?'active':''} ${a.disabled?'disabled':''}" onclick="selectAgent(${i})" ${a.disabled?'data-tooltip="These are under development"':''} style="${i===currentAgent?'border-left-color:'+a.laneColor:''}">
       <div class="agent-icon" style="background:${a.bgGlow}">${a.icon}</div>
       <div class="agent-btn-text">
         <span class="agent-name">${a.name}</span>
@@ -1186,6 +1191,7 @@ ${figma?'2. Read Figma design via MCP for component details':'2. Use solution de
 
 // ──────────────────── NAV ────────────────────
 function selectAgent(i) {
+  if(agents[i].disabled) return;
   currentAgent=i;
   renderSidebar();
   renderMain();
