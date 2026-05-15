@@ -694,75 +694,51 @@ ${text}
 
 **AGENT INSTRUCTIONS:**
 
-**STEP 0 — SEARCH EXISTING RESEARCH FIRST (mandatory before creating anything)**
-Before proposing new research, check whether the answer already exists across all available sources:
+Run Steps 1–3 automatically without stopping to ask the user. Gather everything you can from internal records, the market, and domain knowledge, synthesise it into one clear answer, then recommend next steps. Only wait for user confirmation at the end of Step 3.
 
-**0a. Slite (internal research & opportunities)**
-1. Search the "All Discovery" collection (Slite ID: MFcG0JEQAzh2cI) for discovery items related to the "${job}" job. Use search-notes and list the results.
-2. Also search the "All Opportunities" collection (Slite ID: 0CBSdHnBH530nI) for opportunities that may contain relevant findings.
-3. For any promising matches, read the full note to check if the research question has already been answered — look for Key Findings, interview summaries, or data analysis results.
+**STEP 1 — GATHER EVIDENCE (run all three sub-steps automatically, in parallel where possible)**
 
-**0b. Dovetail (past user research — last 12 months)**
-4. Search Dovetail for any research projects, interview highlights, tags, or insights from the last 12 months that relate to the "${job}" job and the research question. Look for:
-   - Tagged highlights or quotes from user interviews
-   - Research project summaries and findings
-   - Insight boards or themes that match the topic
-   - Any existing evidence that answers or partially answers the question
+**1a. Internal research (Slite, Dovetail, Airtable)**
+- Search Slite "All Discovery" (MFcG0JEQAzh2cI) and "All Opportunities" (0CBSdHnBH530nI) for prior research related to the "${job}" job and the research question. Use search-notes; read promising matches in full and capture Key Findings, interview summaries, and data analysis results.
+- Search Dovetail for projects, highlights, tags, or insights from the last 12 months that relate to the question.
+- Search Airtable "Feedback from Support and Sales" for related complaints, feature requests, lost-deal objections, and pain points (last 12 months where possible).
 
-**0c. Airtable (support & sales feedback)**
-5. Search the Airtable "Feedback from Support and Sales" sheet for entries related to the research question and the "${job}" job. Look for:
-   - Customer complaints, feature requests, or pain points reported by support
-   - Sales feedback on lost deals, objections, or unmet needs
-   - Patterns in feedback frequency or severity that relate to the topic
-   - Filter for entries from the last 12 months where possible
+**1b. Market research (competitor & industry scan via web search)**
+- Identify 3–5 relevant competitors or comparable products in the accounting / SMB software space (e.g. Xero, QuickBooks, Sage, FreeAgent, Dinero, Billy, Fortnox, plus any niche players relevant to the "${job}" job).
+- For each: how they frame the problem in product/marketing/help docs, specific features or UX patterns they use, and public user discussion on G2, Capterra, Reddit, Trustpilot, X/Twitter, or accounting communities.
+- Also scan for industry articles, analyst takes, and emerging trends (AI adoption, regulatory changes, workflow automation) that shift how the market thinks about the problem.
 
-**0d. Synthesise and decide**
-6. **If existing research answers the question (fully or partially):**
-   - Present a summary of what was found across all sources (Slite, Dovetail, Airtable), with links where available
-   - Highlight which parts of the question are already answered and which gaps remain
-   - Note the strength of evidence: how many sources corroborate, how recent the data is, and whether it's qualitative or quantitative
-   - Ask the user: "This existing research covers [X]. Would you still like to create a new discovery item to explore [remaining gaps], or is this sufficient?"
-   - Only proceed to create a new discovery item if the user confirms there are unanswered aspects
-7. **If no relevant existing research is found:**
-   - Let the user know: "I searched [N] discovery items, [M] opportunities in Slite, Dovetail research from the last 12 months, and the Airtable support/sales feedback — nothing covers this question yet. I'll create a new discovery item."
-   - Proceed with the steps below
+**1c. Best-practice / domain knowledge**
+- Answer the question using established frameworks, standards, and domain expertise. For accounting/finance topics, lean on sources like ISA 240, COSO, AICPA guidance, IFRS/IAS, audit and data-quality literature, and recognised industry references.
+- Apply the answer to the e-conomic context: Danish/Nordic SMBs, bookkeepers, typical firm sizes, the regulatory environment, and the workflows e-conomic supports.
 
-**STEP 1 — MARKET RESEARCH (competitor & industry scan — only if proceeding after Step 0)**
-Before creating the discovery item, search the web to understand how others are thinking about this problem. This adds outside-in context to the research brief.
+**STEP 2 — SYNTHESISE AND ANSWER (run automatically after Step 1)**
 
-1. Identify 3–5 relevant competitors or comparable products in the accounting / SMB software space (e.g. Xero, QuickBooks, Sage, FreeAgent, Dinero, Billy, Fortnox, plus any niche players relevant to the "${job}" job).
-2. For each competitor, search for:
-   - How they frame this problem in their product, marketing copy, or help documentation
-   - Specific features, flows, or UX patterns they use to address it (screenshots, walkthroughs, changelogs)
-   - Public user discussion — G2, Capterra, Reddit, Trustpilot, X/Twitter, accounting communities — where users describe needs related to this question
-3. Also search for broader industry signal:
-   - Articles, blog posts, or analyst takes on this topic
-   - Emerging trends (AI adoption, regulatory changes, workflow automation) that shift how the market is thinking about this problem
-4. Synthesise the findings:
-   - Common patterns / shared assumptions across competitors
-   - Notable differentiators — where approaches diverge and why
-   - Gaps or pain points users express that no one is solving well
-   - Implications for how e-conomic should approach the research question
+Combine everything from Step 1 into a single unified response. Lead with this header exactly:
 
-Carry this synthesis into the discovery item's Research Brief (Step 3) under a new "Market Context" section, with links to the most relevant sources.
+> **This is what I can tell you about your question:**
 
-**STEP 2 — BEST-PRACTICE ANSWER (knowledge-based first pass — only if proceeding after Step 0)**
-Before creating a discovery item, give the user a direct, knowledge-based answer to their research question using domain expertise and authoritative sources. This is a first-pass answer, not a substitute for customer research.
+Then deliver a clear, structured answer that:
+1. **Directly addresses the research question** — not a list of sources, but an actual answer.
+2. **Cites the evidence** behind each part of the answer with inline links — label each claim as coming from internal research (Slite / Dovetail / Airtable), market scan (competitor or industry source), or best-practice knowledge (framework or reference).
+3. **Calls out confidence** — where evidence converges across sources (high confidence) and where it diverges or is thin (lower confidence).
+4. **Flags open questions** — what the gathered evidence cannot resolve.
 
-1. Answer the research question as best you can using general knowledge, industry best practice, and authoritative sources. For example, if the question is "What anomalies matter the most?" for an anomaly-detection JTBD, draw on accounting/audit best practice (e.g. ISA 240 on fraud, COSO, AICPA guidance), data-quality literature, and known patterns from finance software (duplicate entries, unusual vendor payments, high-value outliers, period-end manipulation, expense category mismatches, etc.).
-2. Apply the answer to the e-conomic context — which aspects matter most for Danish/Nordic SMBs and the bookkeepers serving them? Account for typical firm size, regulatory environment, and the workflows e-conomic supports.
-3. Cite authoritative sources where possible — link to published frameworks, standards bodies, academic papers, or recognized industry references.
-4. Present the answer to the user clearly and concisely, framed as: "Here's what general best practice / domain knowledge says about your question…"
-5. **Then explicitly note the limits of this answer and recommend deeper research:**
-   - "This is a knowledge-based starting point. To learn what *actually* matters to e-conomic customers — their specific workflows, edge cases, and priorities — we need to talk to them directly."
-   - "I recommend creating a discovery item to investigate this with real users. Want me to proceed?"
-6. Wait for the user's confirmation before moving to Step 3. If the user says the best-practice answer is sufficient, stop here and do not create a discovery item.
+The answer must always follow this shape, regardless of how much evidence was found. If internal research already covers the question, lead with that. If only best-practice knowledge applies, lead with that. Always fill the response with what you do know, and clearly label what you don't.
 
-Carry this answer into the discovery item's content (Step 3) under a new "Best-Practice Answer" section, so the field researcher has a clear starting point to validate or challenge.
+**STEP 3 — RECOMMEND NEXT STEP (run automatically after Step 2)**
 
-**STEP 3 — CREATE DISCOVERY ITEM (only if needed after Step 0 and confirmed in Step 2)**
-1. Read the research question and refine it into a clear, specific discovery item title (a question format works best)
-2. Based on the nature of the question, suggest the most appropriate research method:
+After delivering the Step 2 answer, recommend one of the following based on what you found:
+
+- **"This answer is sufficient — no new discovery item needed."** Use this when gathered evidence resolves the question with reasonable confidence and only minor gaps remain.
+- **"To go deeper, I recommend creating a discovery item to investigate [specific gap] with real e-conomic users."** Use this when meaningful open questions remain that only customer research can answer (specific workflows, edge cases, e-conomic-specific priorities).
+
+Then ask: **"Should I create the discovery item?"** and wait for the user's confirmation before doing anything else.
+
+**STEP 4 — CREATE DISCOVERY ITEM (only if the user confirms in Step 3)**
+
+1. Refine the research question into a clear, specific discovery item title (a question format works best).
+2. Suggest the most appropriate research method:
    - "User interview" — for understanding behaviors, motivations, and context
    - "Data analysis" — for quantifying frequency, duration, or patterns
    - "Diary study" — for capturing experiences over time in natural context
@@ -776,28 +752,23 @@ Carry this answer into the discovery item's content (Step 3) under a new "Best-P
    - Key Finding (column ID: z11DQ993rs): leave empty
    - Linked Opportunity (column ID: WwKQmnJqK7): leave empty
    - Discovery Owner (column ID: z6O5sCOwBL): set to the current Slite user. Use get-user to find the logged-in user and assign them.
-4. After creating the collection item, add rich content to the note body (using append-blocks) with the following sections:
+4. Append rich content to the note body (using append-blocks) with these sections:
 
    **Research Brief**
    - Context: Why this research matters for the "${job}" job and which mission(s) it connects to
    - Hypothesis: What we currently believe and what this research aims to validate or challenge
 
-   **Market Context** (from Step 1)
-   - How competitors and the broader market are thinking about this problem
-   - Patterns, differentiators, and unmet needs you found in the web scan
-   - Links to the most relevant sources (competitor product pages, reviews, articles)
-   - Implications: how the market context should shape what we investigate or design
-
-   **Best-Practice Answer** (from Step 2)
-   - Knowledge-based first-pass answer to the research question, drawing on domain expertise, frameworks, and authoritative sources
-   - How that answer applies to the e-conomic context (Danish/Nordic SMBs, bookkeepers, typical workflows)
-   - Cited sources (frameworks, standards bodies, papers, references)
-   - Open questions: what this answer cannot tell us, and why customer research is still needed
+   **What We Already Know** (synthesis from Steps 1–2)
+   - The Step 2 answer in full
+   - Internal research summary (Slite, Dovetail, Airtable) with links
+   - Market context: competitors, patterns, differentiators, unmet needs — with source links
+   - Best-practice / domain knowledge: cited frameworks and references
+   - Open questions this research will close
 
    **Suggested Interview / Research Questions**
    - 5–8 open-ended questions tailored to the research topic
    - Mix of exploratory ("How do you currently..."), behavioral ("Walk me through the last time you..."), and evaluative ("What would need to change for you to...") questions
-   - For each question, add a short note on what it aims to uncover
+   - For each, a short note on what it aims to uncover
 
    **Participant Segmentation**
    - Primary segment: who to talk to first (role, experience level, firm size, client portfolio type)
@@ -812,7 +783,7 @@ Carry this answer into the discovery item's content (Step 3) under a new "Best-P
    - Potential biases to watch out for
 
    Format everything cleanly with headers and bullet points so the UX designer can review, edit, and use it directly as a research plan.
-5. Confirm with link to the created item`;
+5. Confirm with a link to the created item.`;
   showResult('discover',prompt);
 }
 
