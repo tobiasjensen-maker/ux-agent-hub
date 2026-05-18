@@ -273,12 +273,12 @@ const agents = [
   {
     id:'opportunity', num:'03', name:'Opportunity Agent', icon:'💡',
     lane:'Discovery', laneColor:'var(--disc)', bgGlow:'var(--glow-disc)',
-    tagline:'Evaluates research inputs against your JTBD framework and missions to create validated opportunities',
+    tagline:'Takes a discovery brief + all its supplemental content and synthesises a Teresa-Torres-style opportunity statement — grounded in evidence, mapped to JTBD and Mission, positioned in the Opportunity Solution Tree',
     capabilities:[
-      {title:'Research Analysis',desc:'Parse interview transcripts and research notes to extract customer needs, pain points, and jobs'},
-      {title:'JTBD Mapping',desc:'Map insights to your 11 Jobs to Be Done with confidence scoring'},
-      {title:'Mission Alignment',desc:'Assess strategic fit against 2026 missions'},
-      {title:'Opportunity Creation',desc:'Draft and push validated opportunities to your Slite backlog'}
+      {title:'Full Brief Ingestion',desc:'Reads the discovery brief and every sub-document (interview snapshots, transcripts, research summaries, findings, syntheses) via get-note-children'},
+      {title:'OST Mapping',desc:'Applies Teresa Torres\\\' Opportunity Solution Tree: Outcome → Opportunity → sibling/sub-opportunities noted for the tree'},
+      {title:'Customer-Voice Statement',desc:'Drafts the opportunity in the customer\\\'s own language — not as a feature — and checks it against OST quality criteria (specificity, MECE, problem-space-only)'},
+      {title:'Evidence-Grounded Output',desc:'Pushes to Slite with verbatim quotes, source links, Impact/Confidence scores, and auto-links the source discovery brief'}
     ],
     inputType:'opportunity'
   },
@@ -501,17 +501,17 @@ function getInputHTML(agent) {
 
     case 'opportunity': return `
       <div class="action-body">
-        <h4>Link to Dovetail project or interview</h4>
-        <p>Paste a Dovetail URL — either a full research project or a specific interview. The agent will pull insights from Dovetail and create the opportunity.</p>
-        <input type="url" id="inp-dovetail-url" placeholder="https://app.dovetail.com/projects/... or .../interviews/...">
-        <div class="helper">The agent reads all tagged highlights, notes, and transcripts from the linked Dovetail data.</div>
+        <h4>Link to discovery brief in Slite</h4>
+        <p>Paste the URL of the discovery brief. The agent reads the brief <em>and all supplemental content under it</em> — interview snapshots, transcripts, research summaries, findings docs — and synthesises an opportunity statement framed by Teresa Torres' Opportunity Solution Tree.</p>
+        <input type="url" id="inp-discovery-brief-url" placeholder="https://e-conomic.slite.com/app/docs/...">
+        <div class="helper">A discovery item from the All Discovery collection. The agent will fan out via <code>get-note-children</code> to read every supplemental document attached to it.</div>
         <div class="template-preview">
           <button class="tpl-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Data flow <span class="tpl-arrow">▾</span></button>
           <div class="tpl-content">
-            <div class="tpl-row"><strong>🕊️ Dovetail Input</strong><div class="tpl-desc">Tagged highlights, interview transcripts, notes, and insight boards from the linked project or interview</div></div>
-            <div class="tpl-row"><strong>🔍 JTBD Mapping</strong><div class="tpl-desc">Maps findings to Jobs, assesses mission alignment</div></div>
-            <div class="tpl-row"><strong>💡 Output: Opportunity</strong><div class="tpl-desc">Created in Slite "All Opportunities" with impact & confidence scores</div></div>
-            <div class="tpl-row"><strong>📸 Output: Interview Snapshot</strong><div class="tpl-desc">Teresa Torres snapshot added to "All Interview Snapshots"</div></div>
+            <div class="tpl-row"><strong>📄 Input</strong><div class="tpl-desc">A discovery brief + all its sub-documents (snapshots, transcripts, findings, syntheses)</div></div>
+            <div class="tpl-row"><strong>🌳 OST Mapping</strong><div class="tpl-desc">Maps evidence to Outcome → Opportunity → (sibling/sub-opportunities noted) per Teresa Torres' framework</div></div>
+            <div class="tpl-row"><strong>💡 Output: Opportunity</strong><div class="tpl-desc">Created in Slite "All Opportunities" with customer-voice statement, evidence, impact & confidence</div></div>
+            <div class="tpl-row"><strong>🔗 Auto-link</strong><div class="tpl-desc">Discovery brief's "Linked Opportunity" field updated; existing snapshots cited as evidence</div></div>
           </div>
         </div>
         <div style="margin-top:12px;"><button class="btn btn-primary" style="background:var(--disc)" id="btn-opportunity" onclick="runOpportunity()" disabled>💡 Deploy Opportunity Agent</button></div>
@@ -862,58 +862,132 @@ ${extra?`\n**Additional Criteria:**\n${extra}\n`:''}
 }
 
 function runOpportunity() {
-  const url=document.getElementById('inp-dovetail-url').value.trim();
-  if(!url){alert('Please paste a Dovetail URL.');return;}
+  const url=document.getElementById('inp-discovery-brief-url').value.trim();
+  if(!url){alert('Please paste a discovery brief URL.');return;}
+  const noteId=extractId(url);
   const prompt=`💡 OPPORTUNITY AGENT — DEPLOY
 
-**Source:** Dovetail
-**Dovetail URL:** ${url}
+**Source:** Discovery brief in Slite
+**Discovery Brief URL:** ${url}
+**Note ID:** ${noteId}
 **Submitted:** ${new Date().toLocaleString('en-GB')}
 
 ---
 
 **AGENT INSTRUCTIONS:**
 
-**Phase 1 — Read Dovetail data**
-1. Open the Dovetail URL above. Determine if it's a research project or a specific interview.
-2. If it's a **project**: read all interviews, tagged highlights, notes, tags, and any insight boards within the project. Summarise the key themes, patterns, and notable quotes across participants.
-3. If it's a **specific interview**: read the full transcript, all tagged highlights, notes, and any linked insights. Extract the participant's role, context, key quotes, desires, and pain points.
-4. Compile a structured summary of findings:
-   - Participants & roles
-   - Top pain points and unmet needs (with verbatim quotes)
-   - Recurring themes and patterns
-   - Any existing tags or insights already created in Dovetail
+This agent takes a discovery brief plus all supplemental content under it and produces one opportunity statement framed by Teresa Torres' **Opportunity Solution Tree (OST)** framework. An opportunity is a customer's unmet need, desire, or pain point in the **problem space** — never a feature or solution. Every opportunity sits under a desired **Outcome**, is grounded in **interview evidence**, and is **sized to inspire multiple solutions** without being so broad it's unactionable.
 
-**Phase 2 — Map to JTBD & create opportunity**
-5. Evaluate findings against JTBD framework (Slite: wCYzIJKe_leay1)
-6. Map to Jobs: ${jobs.map(j=>j.name).join(', ')}
-7. Assess Mission alignment: Functional Automation, Agentic Automation, Adjacent & Partners, Trusted Platform
-8. Extract core customer problem / unmet need from the Dovetail data
-9. Draft opportunity title + description
-10. Suggest Impact and Confidence scores (based on evidence strength from the Dovetail data — number of participants, consistency of theme, severity of pain)
-11. Search the "All Discovery" collection (Slite ID: MFcG0JEQAzh2cI, format: collection) for discovery items that match the same Job and are related to the opportunity's topic. If a matching discovery item exists, note its URL to link it in step 12.
-12. Add to "All Opportunities" collection (Slite ID: 0CBSdHnBH530nI)
-   - Set field "Created Date" (column ID: ZoUKJBd_3p) to today's date (${new Date().toISOString().split('T')[0]})
-   - Set Status to "Idea"
-   - Set Owner (column ID: 56fedd3d-a715-4bc6-ae4c-2c64a2922db6) to the current Slite user. Use get-user to find the logged-in user and assign them.
-13. If a related discovery item was found in step 11, update that discovery item's "Linked Opportunity" field (column ID: WwKQmnJqK7) with the URL of the newly created opportunity.
+**Phase 1 — Read the discovery brief and all supplemental content**
+1. Read the discovery brief from Slite (${noteId}). Capture: research question, JTBD, hypothesis, Research Brief, Market Context (if present), Best-Practice / Domain Knowledge (if present), and any Key Finding or summary fields.
+2. Use \`get-note-children\` to list every sub-document under the discovery brief. The brief may contain any combination of:
+   - Interview snapshots (Teresa Torres format: Story · JTBD · Desire · Pain Point · Context)
+   - Interview transcripts or raw notes
+   - Research summaries, conclusions, findings docs
+   - Data analysis outputs, NPS verbatims, support/sales feedback excerpts
+   - Synthesis or affinity maps
+3. Read each supplemental document in full. From across the brief and all sub-documents, extract:
+   - Verbatim quotes and the speaker's context (role, firm size, segment)
+   - Specific stories — concrete past events, not generalisations
+   - Recurring desires, pain points, and themes
+   - Evidence strength: number of distinct sources, consistency, recency, specificity
+   - Any existing tags, syntheses, or frameworks already applied
 
-**Phase 3 — Create interview snapshot(s)**
-14. For each interview/participant found in the Dovetail data, create an Interview Snapshot in the "All Interview Snapshots" collection (Slite ID: BN5ADUt49tHfNA) based on Teresa Torres' interview snapshot method:
-   - Title: A short descriptive title summarising the participant's story
-   - Set "Job to Be Done" (column ID: NB9s0NSKlO) to the matched JTBD from step 6
-   - Set "Interview Date" (column ID: hzv0c-t6Ay) to the interview date from Dovetail (or today if unavailable: ${new Date().toISOString().split('T')[0]})
-   - Set "Participant" (column ID: kz6GE1YJUn) to the participant's name or role
-   - Set "Key Quote" (column ID: xqvjVBYEr2) to the most impactful verbatim quote
-   - Set "Desire" (column ID: cUrHLvdENN) to what the participant was trying to achieve
-   - Set "Pain Point" (column ID: pbcyv2tkT1) to what prevented them or made it difficult
-   - Set "Context" (column ID: 7zE6SAJGyR) to the situation/circumstances
-   - Set "Linked Opportunity" (column ID: F2V304f88-) to the URL of the opportunity created in step 12
-   - Set "Linked Discovery" (column ID: QJEhj_pxxZ) to the URL of the matching discovery item (if found in step 11)
-   - In the snapshot's body content, write the full interview snapshot narrative in Teresa Torres' format.
+**Phase 2 — Map evidence to the Opportunity Solution Tree**
+4. **Desired Outcome** — pick the most-aligned 2026 Mission (Functional Automation, Agentic Automation, Adjacent & Partners, or Trusted Platform) and articulate the specific customer behaviour or business metric that would shift if this opportunity were solved.
+5. **JTBD** — match to one of: ${jobs.map(j=>j.name).join(', ')}. Justify with evidence.
+6. **Opportunity statement** — draft in the customer's own voice. A specific desire or pain in their language. Example shape: *"I want to know which client needs my attention today so I don't let anyone slip through the cracks."*
+7. **Check the statement against OST quality criteria** — rewrite until all four are true:
+   - ✅ Phrased from the customer's perspective (not a feature or solution)
+   - ✅ Specific enough to inspire 3+ different solution ideas, broad enough that it isn't itself one solution
+   - ✅ Sits cleanly under the chosen desired Outcome
+   - ✅ MECE relative to existing opportunities — search the "All Opportunities" collection (Slite ID: 0CBSdHnBH530nI) for overlapping opportunities and either differentiate this one or flag the duplicate to the user before creating
+8. **Sibling / sub-opportunities** — note any other unmet needs the evidence reveals that sit under the same Outcome. Don't create them; surface them so the tree can be expanded later.
 
-**Phase 4 — Confirm**
-15. Confirm with links to the opportunity, all interview snapshots created, and mention which discovery item was linked (if any). Include a brief summary of the key evidence from Dovetail that supports the opportunity.`;
+**Phase 3 — Score Impact and Confidence**
+9. **Impact** (Small / Medium / Large / XL) — how strongly solving this opportunity would move the desired Outcome. Justify with severity of pain × reach across customer base.
+10. **Confidence** (Low / Medium / High) — strength of the evidence, scored on:
+    - Source breadth (how many distinct participants / sources?)
+    - Consistency (do findings converge or contradict?)
+    - Recency (how fresh is the data?)
+    - Specificity (concrete stories vs. generalisations)
+    Output a one-line rationale.
+
+**Phase 4 — Create the opportunity in Slite**
+11. Add to "All Opportunities" collection (Slite ID: 0CBSdHnBH530nI):
+    - Title: the opportunity statement (customer's voice)
+    - "Created Date" (column ID: ZoUKJBd_3p): ${new Date().toISOString().split('T')[0]}
+    - Status: "Idea"
+    - Owner (column ID: 56fedd3d-a715-4bc6-ae4c-2c64a2922db6): the current Slite user (use \`get-user\`)
+12. Append rich content (using \`append-blocks\`) structured to OST conventions:
+
+    **Opportunity Statement**
+    - The full statement in the customer's own language.
+
+    **Desired Outcome** (position in the tree)
+    - The 2026 Mission this supports
+    - The specific customer behaviour or business metric that would change if solved
+    - Why this outcome matters strategically
+
+    **Job to Be Done**
+    - The matched JTBD (with link to the Slite Job page)
+    - Why this JTBD fits the evidence
+
+    **Customer Need / Desire**
+    - What success looks like from the customer's perspective
+    - The underlying motivation behind the surface request — what they're really trying to achieve
+
+    **Pain Points**
+    - What currently goes wrong, in the customer's own words wherever possible
+    - Workarounds, frustrations, and emotional reactions
+
+    **Context**
+    - When, where, and how this need surfaces — triggering moments, frequency, stakes
+    - Customer segment(s) for whom this is sharpest
+
+    **Evidence** (the OST grounding — no claims without it)
+    - Verbatim quotes with attribution (participant role, source document, link to the supplemental note)
+    - Specific stories — concrete past events, not "users often…"
+    - Links to every interview snapshot, transcript, or research note that supports the opportunity
+    - Convergence: which findings appear across multiple sources
+
+    **Sibling / Sub-opportunities** (for tree completeness)
+    - Other unmet needs surfaced by the evidence that sit under the same Outcome — listed so the tree can be expanded later (do not create them here)
+
+    **Impact & Confidence**
+    - Impact: [S/M/L/XL] — rationale (severity × reach)
+    - Confidence: [Low/Medium/High] — rationale (breadth, consistency, recency, specificity)
+    - Risks / counter-evidence: where the picture is messy or contradictory
+
+    **Linked Discovery & Supplemental Sources**
+    - Link to the source discovery brief
+    - List of every supplemental document that informed this opportunity, with links
+
+13. Update the source discovery item's "Linked Opportunity" field (column ID: WwKQmnJqK7) with the URL of the newly created opportunity.
+
+**Phase 5 — Interview snapshots (only create if missing)**
+14. If interview snapshots already exist as sub-documents of the discovery brief, **do not duplicate them** — they are already cited in the Evidence section above.
+15. If raw research data exists (transcripts, notes) but no Teresa-Torres-format snapshots, create one Interview Snapshot per participant in "All Interview Snapshots" (Slite ID: BN5ADUt49tHfNA):
+    - Title: short descriptive title summarising the participant's story
+    - "Job to Be Done" (column ID: NB9s0NSKlO): matched JTBD
+    - "Interview Date" (column ID: hzv0c-t6Ay): from source data (or today: ${new Date().toISOString().split('T')[0]})
+    - "Participant" (column ID: kz6GE1YJUn): name or role
+    - "Key Quote" (column ID: xqvjVBYEr2): most impactful verbatim quote
+    - "Desire" (column ID: cUrHLvdENN): what the participant wanted to achieve
+    - "Pain Point" (column ID: pbcyv2tkT1): what prevented them
+    - "Context" (column ID: 7zE6SAJGyR): situation / circumstances
+    - "Linked Opportunity" (column ID: F2V304f88-): URL of the opportunity created in Phase 4
+    - "Linked Discovery" (column ID: QJEhj_pxxZ): URL of the source discovery brief
+    - In the body, write the full snapshot narrative in Teresa Torres' Story → JTBD → Desire → Pain → Context format
+16. After creating any new snapshots, append their links to the opportunity's **Evidence** section.
+
+**Phase 6 — Confirm**
+17. Return:
+    - Link to the opportunity
+    - Links to any snapshots created in Phase 5
+    - Confirmation that the discovery brief's Linked Opportunity field was updated
+    - A short summary of the key evidence supporting the opportunity statement
+    - Any sibling / sub-opportunities surfaced for the tree, so the team can decide whether to deploy the agent again for them`;
   showResult('opportunity',prompt);
 }
 
@@ -1183,7 +1257,7 @@ function selectAgent(i) {
 const inputRules = {
   discover:    {btn:'btn-discover',    required:[{id:'inp-discover-job',type:'select'},{id:'inp-discover-text',type:'text'}]},
   recruit:     {btn:'btn-recruit',      required:[{id:'inp-recruit-url',type:'text'}]},
-  opportunity: {btn:'btn-opportunity', required:[{id:'inp-dovetail-url',type:'text'}]},
+  opportunity: {btn:'btn-opportunity', required:[{id:'inp-discovery-brief-url',type:'text'}]},
   pitch:       {btn:'btn-pitch',       required:[{id:'inp-pitch-url',type:'text'}]},
   brief:       {btn:'btn-brief',       required:[{id:'inp-brief-url',type:'text'}]},
   design:      {btn:'btn-design',      required:[{id:'inp-design-url',type:'text'}]},
