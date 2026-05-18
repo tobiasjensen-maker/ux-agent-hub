@@ -783,7 +783,17 @@ Then ask: **"Should I create the discovery item?"** and wait for the user's conf
    - Potential biases to watch out for
 
    Format everything cleanly with headers and bullet points so the UX designer can review, edit, and use it directly as a research plan.
-5. Confirm with a link to the created item.`;
+5. **Compile a research digest PDF and attach it to the discovery item** so the analysis is preserved as a single retrievable file.
+   - Use the pdf skill to generate a clean, well-formatted PDF titled \`Research Digest — [discovery item title].pdf\`.
+   - Include the following sections in this order:
+     - **Cover**: research question, JTBD, date, owner, link to the Slite discovery item
+     - **Answer** — the full Step 2 unified response ("This is what I can tell you about your question…"), with inline citations
+     - **Internal research** — full summary of findings from Slite (All Discovery & All Opportunities), Dovetail, and Airtable, with links to every source
+     - **Market context** — competitors covered, framing, features/UX patterns, user discussion, industry trends, with source links
+     - **Best-practice / domain knowledge** — answer drawn from frameworks, standards, and references, with citations
+     - **Confidence & open questions** — where evidence converges, where it diverges, and what the discovery research will close
+   - Attach the PDF to the discovery item in Slite. If the Slite MCP supports file attachments, attach it directly to the note. If direct attachment isn't supported, save the PDF to the user's Downloads folder and append a clearly labelled "📎 Research Digest PDF" reference to the discovery item note pointing to the file location (and, if available, a shareable link).
+6. Confirm with a link to the created discovery item and a note that the research digest PDF is attached (or saved + linked).`;
   showResult('discover',prompt);
 }
 
