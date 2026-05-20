@@ -3,14 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UX Agent Hub</title>
+<title>Discovery Management Agents</title>
 <style>
 :root {
   --disc:#4F46E5; --del:#0891B2; --ai:#7C3AED; --val:#059669; --success:#16A34A;
+  /* Discovery Management — triple-diamond phase colors (light → dark blue) */
+  --pd:#60A5FA;    /* Problem Discovery */
+  --pdef:#3B82F6;  /* Problem Definition (incl. Pitch — boundary 1) */
+  --sd:#2563EB;    /* Solution Discovery */
+  --sdef:#1D4ED8;  /* Solution Definition */
+  --scope:#1E40AF; /* Problem & Solution Scope (boundary 2 → Delivery) */
+  --loop:#1E3A8A;  /* Closing the Loop */
   --bg:#F8FAFC; --surface:#FFFFFF; --card:#FFFFFF; --card-hover:#F1F5F9;
   --border:#E2E8F0; --text:#1E293B; --muted:#64748B; --dim:#94A3B8;
   --glow-disc:rgba(79,70,229,.08); --glow-del:rgba(8,145,178,.08);
   --glow-ai:rgba(124,58,237,.08); --glow-val:rgba(5,150,105,.08);
+  --glow-pd:rgba(96,165,250,.10); --glow-pdef:rgba(59,130,246,.10);
+  --glow-sd:rgba(37,99,235,.10); --glow-sdef:rgba(29,78,216,.10);
+  --glow-scope:rgba(30,64,175,.10); --glow-loop:rgba(30,58,138,.10);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;}
@@ -21,6 +31,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .hub-icon{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--ai),var(--disc));display:flex;align-items:center;justify-content:center;font-size:14px;color:white;}
 .header h1{font-size:17px;font-weight:700;letter-spacing:-.3px;}
 .header h1 span{color:var(--ai);font-weight:800;}
+.header-subtitle{font-size:11px;color:var(--muted);margin-top:3px;max-width:920px;}
+.header-subtitle a{color:var(--ai);text-decoration:none;font-weight:600;}
+.header-subtitle a:hover{text-decoration:underline;}
+.header-subtitle .phase-chip{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;color:#fff;margin:0 1px;}
+
+/* Sidebar phase grouping */
+.phase-group{margin-bottom:6px;}
+.phase-header{padding:14px 20px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text);display:flex;align-items:center;gap:8px;}
+.phase-header .phase-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.phase-header .phase-num{color:var(--dim);font-weight:700;}
 
 
 /* Layout */
@@ -165,16 +185,15 @@ textarea{min-height:120px;}
 <div class="header">
   <div class="header-top">
     <div class="hub-icon">⚡</div>
-    <h1>UX <span>Agent</span> Hub</h1>
+    <h1>Discovery <span>Management</span> Agents</h1>
   </div>
 </div>
 
 <!-- LAYOUT -->
 <div class="layout">
 
-  <!-- SIDEBAR: Agent list -->
+  <!-- SIDEBAR: Agent list, grouped by Discovery Management phase -->
   <div class="sidebar">
-    <div class="sidebar-label">Agents</div>
     <div id="agentList"></div>
   </div>
 
@@ -248,20 +267,20 @@ const missions = [
 const agents = [
   {
     id:'discover', num:'01', name:'Discovery Agent', icon:'🔍',
-    lane:'Discovery', laneColor:'var(--disc)', bgGlow:'var(--glow-disc)',
-    tagline:'Searches existing research first — if the answer is already there, you get it instantly. If not, the agent creates a discovery item in your <a href="https://e-conomic.slite.com/app/docs/MFcG0JEQAzh2cI" target="_blank" style="color:var(--ai);text-decoration:none;font-weight:600;">All Discovery collection</a>',
+    lane:'Problem Discovery', laneColor:'var(--pd)', bgGlow:'var(--glow-pd)',
+    tagline:'Phase 1 of Discovery Management. Searches existing research across Slite, Dovetail, and Airtable first — if the answer is already there, you get it instantly. If not, the agent creates a research question in the <a href="https://e-conomic.slite.com/app/docs/MFcG0JEQAzh2cI" target="_blank" style="color:var(--ai);text-decoration:none;font-weight:600;">Discovery Backlog</a> (All Discovery collection) tagged to a JTBD.',
     capabilities:[
       {title:'Existing Research Search',desc:'Searches All Discovery and All Opportunities for prior research that may already answer your question'},
       {title:'Gap Analysis',desc:'If partial answers exist, highlights what\'s covered and what gaps remain before creating new work'},
       {title:'Method Suggestion',desc:'Recommends a research method (interview, diary study, data analysis, usability test, survey)'},
-      {title:'Backlog Creation',desc:'Only creates a new discovery item if the question hasn\'t been answered — avoids duplicate research'}
+      {title:'Discovery Backlog Creation',desc:'Only creates a new discovery item — tagged to a JTBD — if the question hasn\'t been answered. Avoids duplicate research.'}
     ],
     inputType:'discover'
   },
   {
     id:'recruit', num:'02', name:'Recruitment Agent', icon:'🎯',
-    lane:'Discovery', laneColor:'var(--disc)', bgGlow:'var(--glow-disc)',
-    tagline:'Takes a discovery brief and finds the best participants from your user panel and Airtable support/sales records — so you can start research fast',
+    lane:'Problem Discovery', laneColor:'var(--pd)', bgGlow:'var(--glow-pd)',
+    tagline:'Phase 1 of Discovery Management. Takes a discovery brief and finds the best participants from your user panel, Airtable support/sales records, and Tableau NPS data — so you can start customer-contact research fast.',
     capabilities:[
       {title:'Brief Parsing',desc:'Reads a discovery item from Slite and extracts participant criteria: role, firm size, experience, client portfolio type'},
       {title:'User Panel Search',desc:'Searches your internal user panel for matching participants based on segmentation criteria'},
@@ -272,8 +291,8 @@ const agents = [
   },
   {
     id:'opportunity', num:'03', name:'Opportunity Agent', icon:'💡',
-    lane:'Discovery', laneColor:'var(--disc)', bgGlow:'var(--glow-disc)',
-    tagline:'Takes a discovery brief + all its supplemental content and synthesises a Teresa-Torres-style opportunity statement — grounded in evidence, mapped to JTBD and Mission, positioned in the Opportunity Solution Tree',
+    lane:'Problem Discovery', laneColor:'var(--pd)', bgGlow:'var(--glow-pd)',
+    tagline:'Phase 1 of Discovery Management. Takes a discovery brief + all its supplemental content and synthesises a Teresa-Torres-style opportunity statement — grounded in evidence, mapped to a JTBD and Mission, positioned in the Opportunity Solution Tree, and added to the per-JTBD Opportunity Backlog.',
     capabilities:[
       {title:'Full Brief Ingestion',desc:'Reads the discovery brief and every sub-document (interview snapshots, transcripts, research summaries, findings, syntheses) via get-note-children'},
       {title:'OST Mapping',desc:'Applies Teresa Torres\\\' Opportunity Solution Tree: Outcome → Opportunity → sibling/sub-opportunities noted for the tree'},
@@ -283,21 +302,33 @@ const agents = [
     inputType:'opportunity'
   },
   {
-    id:'pitch', num:'04', name:'Pitch Agent', icon:'📋', disabled:true,
-    lane:'Delivery', laneColor:'var(--del)', bgGlow:'var(--glow-del)',
-    tagline:'Generates delivery pitches from validated opportunities using your Pitch Template v3.0',
+    id:'problem-validate', num:'04', name:'Validation Agent', icon:'🧠', disabled:true,
+    lane:'Problem Definition', laneColor:'var(--pdef)', bgGlow:'var(--glow-pdef)',
+    tagline:'Phase 2 of Discovery Management. Pressure-tests an opportunity for desirability, viability, and feasibility before it becomes a Pitch — structuring the right tests to converge on the right problem.',
     capabilities:[
-      {title:'Opportunity Reading',desc:'Pull full context from your Slite opportunity backlog'},
-      {title:'Pitch Generation',desc:'Fill all 5 template sections: Problem, Value, Evidence, Success, Sizing'},
+      {title:'Desirability Tests',desc:'Designs lightweight tests (concept probes, signal surveys, targeted interviews) to validate that customers actually have the problem'},
+      {title:'Viability Hypothesis',desc:'Frames the business-side viability hypothesis — pricing, segment, retention impact — for the Trio to test'},
+      {title:'Feasibility Probe',desc:'Surfaces technical and operational constraints early by structuring a focused conversation with the Team Lead'},
+      {title:'Pitch Readiness',desc:'Outputs a go / watch / park recommendation for promoting the opportunity into a Pitch at the bi-weekly PLM alignment'}
+    ],
+    inputType:'problem-validate'
+  },
+  {
+    id:'pitch', num:'05', name:'Pitch Agent', icon:'📋', disabled:true,
+    lane:'Problem Definition', laneColor:'var(--pdef)', bgGlow:'var(--glow-pdef)',
+    tagline:'Phase 3 of Discovery Management — the first commitment gate. Takes a validated opportunity and drafts the Pitch using Pitch Template v3.0 with the full metric ladder (north star → mission → pitch-level), ready for the bi-weekly UX Manager + Product Lead alignment.',
+    capabilities:[
+      {title:'Opportunity Reading',desc:'Pull full context from your Slite Opportunity Backlog and the parent JTBD page'},
+      {title:'Pitch Generation',desc:'Fill all 5 template sections: Problem, Value, Evidence, Success, Sizing — with the metric ladder explicit'},
       {title:'Slite Integration',desc:'Save to Pitches collection with status "Up for review" and metadata'},
-      {title:'Chain Tracing',desc:'Links back to original JTBD and mission for full context'}
+      {title:'Chain Tracing',desc:'Links back to original JTBD and Mission for full context, prepares the bi-weekly PLM alignment review'}
     ],
     inputType:'pitch'
   },
   {
-    id:'brief', num:'05', name:'Brief Agent', icon:'✏️', disabled:true,
-    lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
-    tagline:'Creates Design Brief 2.1 from pitch + opportunity, scoping the problem and preparing LLM context',
+    id:'brief', num:'06', name:'Brief Agent', icon:'✏️', disabled:true,
+    lane:'Solution Discovery', laneColor:'var(--sd)', bgGlow:'var(--glow-sd)',
+    tagline:'Phase 4 of Discovery Management. Translates an approved Pitch + opportunity into a Design Brief 2.1 — the context the Trio uses to generate solution alternatives.',
     capabilities:[
       {title:'Full Chain Reading',desc:'Trace pitch → opportunity → job → mission for complete context'},
       {title:'Brief Generation',desc:'Fill Design Brief 2.1 template: Foundations, Core Problem, JTBD, Journey, Behavior Shift, Risks, Outcomes, Scope'},
@@ -307,9 +338,9 @@ const agents = [
     inputType:'brief'
   },
   {
-    id:'design', num:'06', name:'Design Agent', icon:'🤖', disabled:true,
-    lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
-    tagline:'Generates coded prototypes using real @economic/taco components — scaffolded with Vite, built to a single HTML file you can open in any browser',
+    id:'design', num:'07', name:'Design Agent', icon:'🤖', disabled:true,
+    lane:'Solution Discovery', laneColor:'var(--sd)', bgGlow:'var(--glow-sd)',
+    tagline:'Phase 4 of Discovery Management. Generates 2–3 prototype variants — coded with real @economic/taco components — as Solution Discovery alternatives for the Trio trade-off review.',
     capabilities:[
       {title:'Real Taco Components',desc:'Uses the actual @economic/taco package (v6) — Layout, Header, Navigation2, Card, Tag, Badge, Alert, Drawer, Table3, and more — not stubs or approximations'},
       {title:'Standalone HTML Output',desc:'Vite + vite-plugin-singlefile builds a single .html file with all JS and CSS inlined — double-click to open, no server needed'},
@@ -319,9 +350,9 @@ const agents = [
     inputType:'design'
   },
   {
-    id:'validate', num:'07', name:'Validation Agent', icon:'🧪', disabled:true,
-    lane:'Validation', laneColor:'var(--val)', bgGlow:'var(--glow-val)',
-    tagline:'Helps structure customer validation — test design, participant selection, and feedback capture',
+    id:'validate', num:'08', name:'Validation Agent', icon:'🧪', disabled:true,
+    lane:'Solution Definition', laneColor:'var(--sdef)', bgGlow:'var(--glow-sdef)',
+    tagline:'Phase 5 of Discovery Management. Structures solution-problem fit testing — test design, participant selection, and feedback capture — to support the promote / watch / park decision.',
     capabilities:[
       {title:'Test Plan Generation',desc:'Create usability test scripts, concept test guides, or preference tests'},
       {title:'Participant Criteria',desc:'Define screening criteria based on JTBD user segments'},
@@ -331,9 +362,9 @@ const agents = [
     inputType:'validate'
   },
   {
-    id:'iterate', num:'08', name:'Iteration Agent', icon:'🔄', disabled:true,
-    lane:'AI + Design System', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)',
-    tagline:'Feeds validation learnings back into the design brief and regenerates refined solutions',
+    id:'iterate', num:'09', name:'Iteration Agent', icon:'🔄', disabled:true,
+    lane:'Solution Definition', laneColor:'var(--sdef)', bgGlow:'var(--glow-sdef)',
+    tagline:'Phase 5 of Discovery Management. Feeds validation learnings back into the brief and regenerates refined prototypes until solution-problem fit is reached.',
     capabilities:[
       {title:'Feedback Integration',desc:'Structure customer feedback as new constraints and revised criteria'},
       {title:'Brief Update',desc:'Patch the design brief with validation learnings'},
@@ -343,9 +374,9 @@ const agents = [
     inputType:'iterate'
   },
   {
-    id:'solution', num:'09', name:'Solution Agent', icon:'✅', disabled:true,
-    lane:'Delivery', laneColor:'var(--del)', bgGlow:'var(--glow-del)',
-    tagline:'Packages the validated solution into a delivery-ready specification with component mappings',
+    id:'solution', num:'10', name:'Solution Agent', icon:'✅', disabled:true,
+    lane:'Problem & Solution Scope', laneColor:'var(--scope)', bgGlow:'var(--glow-scope)',
+    tagline:'Phase 6 of Discovery Management — the second commitment gate. Packages the validated direction into a Problem & Solution Scope: the handover artefact to Delivery Management, co-owned by UX, PM, and Team Lead.',
     capabilities:[
       {title:'Spec Generation',desc:'Create interaction specs: states, transitions, error handling, edge cases'},
       {title:'Component Mapping',desc:'Map to exact Taco React components (@economic/taco) with props'},
@@ -361,14 +392,29 @@ let currentAgent = 0;
 // ──────────────────── RENDER ────────────────────
 function renderSidebar() {
   const el = document.getElementById('agentList');
-  el.innerHTML = agents.map((a,i) => `
-    <button class="agent-btn ${i===currentAgent?'active':''} ${a.disabled?'disabled':''}" onclick="selectAgent(${i})" ${a.disabled?'data-tooltip="These are under development"':''} style="${i===currentAgent?'border-left-color:'+a.laneColor:''}">
-      <div class="agent-icon" style="background:${a.bgGlow}">${a.icon}</div>
-      <div class="agent-btn-text">
-        <span class="agent-name">${a.name}</span>
-        <span class="agent-lane" style="color:${a.laneColor}">${a.lane}</span>
+  // Group agents by phase (lane), preserving array order
+  const phases = [];
+  agents.forEach((a,i) => {
+    let p = phases.find(x => x.name === a.lane);
+    if(!p) { p = {name:a.lane, color:a.laneColor, items:[]}; phases.push(p); }
+    p.items.push({...a, idx:i});
+  });
+  el.innerHTML = phases.map(p => `
+    <div class="phase-group">
+      <div class="phase-header">
+        <span class="phase-dot" style="background:${p.color}"></span>
+        <span>${p.name}</span>
       </div>
-    </button>
+      ${p.items.map(a => `
+        <button class="agent-btn ${a.idx===currentAgent?'active':''} ${a.disabled?'disabled':''}" onclick="selectAgent(${a.idx})" ${a.disabled?'data-tooltip="These are under development"':''} style="${a.idx===currentAgent?'border-left-color:'+a.laneColor:''}">
+          <div class="agent-icon" style="background:${a.bgGlow}">${a.icon}</div>
+          <div class="agent-btn-text">
+            <span class="agent-name">${a.name}</span>
+            <span class="agent-lane" style="color:${a.laneColor}">${a.lane}</span>
+          </div>
+        </button>
+      `).join('')}
+    </div>
   `).join('');
 }
 
