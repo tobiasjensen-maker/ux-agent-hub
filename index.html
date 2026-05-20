@@ -326,31 +326,19 @@ const agents = [
     inputType:'pitch'
   },
   {
-    id:'brief', num:'06', name:'Brief Agent', icon:'✏️', disabled:true,
+    id:'prototype', num:'06', name:'Prototyping Agent', icon:'🤖', disabled:true,
     lane:'Solution Discovery', laneColor:'var(--sd)', bgGlow:'var(--glow-sd)',
-    tagline:'Phase 4 of Discovery Management. Translates an approved Pitch + opportunity into a Design Brief 2.1 — the context the Trio uses to generate solution alternatives.',
+    tagline:'Phase 4 of Discovery Management. Takes an approved Pitch + opportunity and generates 2–3 prototype variants — coded with real @economic/taco components — as Solution Discovery alternatives for the Trio trade-off review.',
     capabilities:[
-      {title:'Full Chain Reading',desc:'Trace pitch → opportunity → job → mission for complete context'},
-      {title:'Brief Generation',desc:'Fill Design Brief 2.1 template: Foundations, Core Problem, JTBD, Journey, Behavior Shift, Risks, Outcomes, Scope'},
-      {title:'Gap Flagging',desc:'Mark sections needing your input with [NEEDS INPUT]'},
-      {title:'LLM Context Prep',desc:'Structure the brief to double as AI generation prompt'}
-    ],
-    inputType:'brief'
-  },
-  {
-    id:'design', num:'07', name:'Design Agent', icon:'🤖', disabled:true,
-    lane:'Solution Discovery', laneColor:'var(--sd)', bgGlow:'var(--glow-sd)',
-    tagline:'Phase 4 of Discovery Management. Generates 2–3 prototype variants — coded with real @economic/taco components — as Solution Discovery alternatives for the Trio trade-off review.',
-    capabilities:[
+      {title:'Full Chain Reading',desc:'Traces Pitch → opportunity → JTBD → Mission to build the design context (Foundations, Core Problem, Journey, Behavior Shift, Outcomes, Scope)'},
       {title:'Real Taco Components',desc:'Uses the actual @economic/taco package (v6) — Layout, Header, Navigation2, Card, Tag, Badge, Alert, Drawer, Table3, and more — not stubs or approximations'},
-      {title:'Standalone HTML Output',desc:'Vite + vite-plugin-singlefile builds a single .html file with all JS and CSS inlined — double-click to open, no server needed'},
-      {title:'Multi-Solution Generation',desc:'Produces 2-3 alternative solutions as separate prototype apps, varying on key dimensions from the brief'},
+      {title:'Multi-Variant Generation',desc:'Produces 2–3 alternative prototypes as separate single-file HTML apps, varying on key dimensions from the brief — ready for the Trio trade-off review'},
       {title:'Figma Integration',desc:'Can also create wireframe-level designs via Figma MCP using the Web Components library'}
     ],
-    inputType:'design'
+    inputType:'prototype'
   },
   {
-    id:'validate', num:'08', name:'Validation Agent', icon:'🧪', disabled:true,
+    id:'validate', num:'07', name:'Validation Agent', icon:'🧪', disabled:true,
     lane:'Solution Definition', laneColor:'var(--sdef)', bgGlow:'var(--glow-sdef)',
     tagline:'Phase 5 of Discovery Management. Structures solution-problem fit testing — test design, participant selection, and feedback capture — to support the promote / watch / park decision.',
     capabilities:[
@@ -362,7 +350,7 @@ const agents = [
     inputType:'validate'
   },
   {
-    id:'iterate', num:'09', name:'Iteration Agent', icon:'🔄', disabled:true,
+    id:'iterate', num:'08', name:'Iteration Agent', icon:'🔄', disabled:true,
     lane:'Solution Definition', laneColor:'var(--sdef)', bgGlow:'var(--glow-sdef)',
     tagline:'Phase 5 of Discovery Management. Feeds validation learnings back into the brief and regenerates refined prototypes until solution-problem fit is reached.',
     capabilities:[
@@ -374,7 +362,7 @@ const agents = [
     inputType:'iterate'
   },
   {
-    id:'solution', num:'10', name:'Solution Agent', icon:'✅', disabled:true,
+    id:'solution', num:'09', name:'Solution Agent', icon:'✅', disabled:true,
     lane:'Problem & Solution Scope', laneColor:'var(--scope)', bgGlow:'var(--glow-scope)',
     tagline:'Phase 6 of Discovery Management — the second commitment gate. Packages the validated direction into a Problem & Solution Scope: the handover artefact to Delivery Management, co-owned by UX, PM, and Team Lead.',
     capabilities:[
