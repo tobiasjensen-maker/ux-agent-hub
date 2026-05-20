@@ -41,10 +41,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .phase-header{padding:14px 20px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text);display:flex;align-items:center;gap:8px;}
 .phase-header .phase-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
 .phase-header .phase-num{color:var(--dim);font-weight:700;}
+.overview-group{margin:8px 0 4px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.overview-group .agent-btn-text .agent-lane{font-weight:700;letter-spacing:.8px;}
+
+/* Landing page */
+.landing{max-width:1000px;}
+.landing-hero{margin-bottom:28px;}
+.landing-hero h2{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px;}
+.landing-hero .lede{font-size:14px;color:var(--muted);line-height:1.6;max-width:780px;}
+.landing-hero .lede a{color:var(--ai);text-decoration:none;font-weight:600;}
+.landing-hero .lede a:hover{text-decoration:underline;}
+.diamond-illustration{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 14px 8px;margin:0 0 36px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.diamond-illustration svg{display:block;width:100%;height:auto;max-width:100%;}
+.landing .section-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin:0 0 14px;}
+.phase-cards{display:flex;flex-direction:column;gap:16px;}
+.phase-card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.phase-card-header{padding:14px 20px;color:#fff;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+.phase-card-header .pc-num{font-size:10px;font-weight:700;letter-spacing:1.2px;opacity:.9;}
+.phase-card-header h4{font-size:17px;font-weight:700;letter-spacing:-.2px;flex:1;color:#fff;margin:0;}
+.phase-card-header .pc-tag{font-size:11px;opacity:.9;font-weight:500;font-style:italic;}
+.phase-card-body{padding:16px 20px 18px;}
+.phase-card-body .what-ux{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.55;}
+.phase-card-body .what-ux strong{color:var(--text);}
+.phase-agents{display:grid;grid-template-columns:1fr;gap:10px;}
+.phase-agent{display:flex;gap:12px;padding:12px 14px;background:var(--card-hover);border-radius:10px;align-items:flex-start;}
+.phase-agent.coming-soon{background:repeating-linear-gradient(45deg,#F8FAFC,#F8FAFC 6px,#F1F5F9 6px,#F1F5F9 12px);}
+.phase-agent .pa-icon{font-size:22px;flex-shrink:0;line-height:1.1;}
+.phase-agent .pa-body{flex:1;min-width:0;}
+.phase-agent .pa-name{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.phase-agent .pa-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fff;color:var(--dim);border:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px;}
+.phase-agent .pa-badge.live{background:#16A34A;color:#fff;border-color:#16A34A;}
+.phase-agent .pa-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-top:3px;}
+.landing-footer{font-size:12px;color:var(--dim);margin-top:32px;padding-top:16px;border-top:1px solid var(--border);line-height:1.6;}
+.landing-footer a{color:var(--ai);text-decoration:none;font-weight:600;}
 
 
 /* Layout */
-.layout{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - var(--header-h,72px));position:sticky;top:var(--header-h,72px);}
+.layout{display:grid;grid-template-columns:260px 1fr;height:100vh;}
 .right-panel{display:none;}
 @media(max-width:900px){.layout{grid-template-columns:1fr;}}
 
@@ -182,13 +215,6 @@ textarea{min-height:120px;}
 <body>
 
 <!-- HEADER -->
-<div class="header">
-  <div class="header-top">
-    <div class="hub-icon">⚡</div>
-    <h1>Discovery <span>Management</span> Agents</h1>
-  </div>
-</div>
-
 <!-- LAYOUT -->
 <div class="layout">
 
@@ -265,6 +291,10 @@ const missions = [
 ];
 
 const agents = [
+  {
+    id:'overview', name:'Overview', icon:'🏠', isLanding:true,
+    lane:'Discovery Management', laneColor:'var(--ai)', bgGlow:'var(--glow-ai)'
+  },
   {
     id:'discover', num:'01', name:'Discovery Agent', icon:'🔍',
     lane:'Problem Discovery', laneColor:'var(--pd)', bgGlow:'var(--glow-pd)',
@@ -380,14 +410,28 @@ let currentAgent = 0;
 // ──────────────────── RENDER ────────────────────
 function renderSidebar() {
   const el = document.getElementById('agentList');
-  // Group agents by phase (lane), preserving array order
+  // Group agents by phase (lane), preserving array order. Landing entries render separately.
+  const landingItems = [];
   const phases = [];
   agents.forEach((a,i) => {
+    if(a.isLanding) { landingItems.push({...a, idx:i}); return; }
     let p = phases.find(x => x.name === a.lane);
     if(!p) { p = {name:a.lane, color:a.laneColor, items:[]}; phases.push(p); }
     p.items.push({...a, idx:i});
   });
-  el.innerHTML = phases.map(p => `
+  const overviewHtml = landingItems.length ? `
+    <div class="overview-group">
+      ${landingItems.map(a => `
+        <button class="agent-btn ${a.idx===currentAgent?'active':''}" onclick="selectAgent(${a.idx})" style="${a.idx===currentAgent?'border-left-color:'+a.laneColor:''}">
+          <div class="agent-icon" style="background:${a.bgGlow}">${a.icon}</div>
+          <div class="agent-btn-text">
+            <span class="agent-name">${a.name}</span>
+          </div>
+        </button>
+      `).join('')}
+    </div>
+  ` : '';
+  el.innerHTML = overviewHtml + phases.map(p => `
     <div class="phase-group">
       <div class="phase-header">
         <span class="phase-dot" style="background:${p.color}"></span>
@@ -398,7 +442,6 @@ function renderSidebar() {
           <div class="agent-icon" style="background:${a.bgGlow}">${a.icon}</div>
           <div class="agent-btn-text">
             <span class="agent-name">${a.name}</span>
-            <span class="agent-lane" style="color:${a.laneColor}">${a.lane}</span>
           </div>
         </button>
       `).join('')}
@@ -447,6 +490,7 @@ function toggleAccordion(btn) {
 function renderMain() {
   const a = agents[currentAgent];
   const main = document.getElementById('mainContent');
+  if(a.isLanding) { main.innerHTML = renderLanding(); return; }
   main.innerHTML = `
     <div class="agent-header">
       <div class="agent-header-row">
@@ -482,6 +526,215 @@ function renderMain() {
       <div class="result-area" id="resultArea-${a.id}"></div>
     </div>
 
+  `;
+}
+
+// ──────────────────── LANDING ────────────────────
+function tripleDiamondSVG() {
+  return `
+<svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Triple-diamond Discovery Management model with agents on each phase">
+  <defs>
+    <marker id="loop-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <!-- DIAMOND 1 — Problem space -->
+  <text x="220" y="76" text-anchor="middle" font-size="11" font-weight="700" fill="#1E293B" letter-spacing="1.2">DIAMOND 1 · PROBLEM SPACE</text>
+  <polygon points="40,200 220,100 400,200 220,300" fill="none" stroke="#3B82F6" stroke-width="1.5" opacity="0.35"/>
+  <polygon points="40,200 220,100 220,300" fill="#60A5FA"/>
+  <polygon points="220,100 400,200 220,300" fill="#3B82F6"/>
+  <text x="130" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Problem</text>
+  <text x="130" y="214" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Discovery</text>
+  <text x="310" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Problem</text>
+  <text x="310" y="214" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Definition</text>
+
+  <!-- Pitch gate -->
+  <line x1="400" y1="200" x2="440" y2="200" stroke="#94A3B8" stroke-width="2"/>
+  <circle cx="420" cy="200" r="10" fill="#DC2626" stroke="#fff" stroke-width="3"/>
+  <text x="420" y="160" text-anchor="middle" font-size="11" font-weight="700" fill="#DC2626">Pitch</text>
+  <text x="420" y="174" text-anchor="middle" font-size="9" fill="#94A3B8">commitment gate</text>
+
+  <!-- DIAMOND 2 — Solution space -->
+  <text x="620" y="76" text-anchor="middle" font-size="11" font-weight="700" fill="#1E293B" letter-spacing="1.2">DIAMOND 2 · SOLUTION SPACE</text>
+  <polygon points="440,200 620,100 800,200 620,300" fill="none" stroke="#1D4ED8" stroke-width="1.5" opacity="0.35"/>
+  <polygon points="440,200 620,100 620,300" fill="#2563EB"/>
+  <polygon points="620,100 800,200 620,300" fill="#1D4ED8"/>
+  <text x="530" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Solution</text>
+  <text x="530" y="214" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Discovery</text>
+  <text x="710" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Solution</text>
+  <text x="710" y="214" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Definition</text>
+
+  <!-- Scope gate -->
+  <line x1="800" y1="200" x2="840" y2="200" stroke="#94A3B8" stroke-width="2"/>
+  <circle cx="820" cy="200" r="10" fill="#DC2626" stroke="#fff" stroke-width="3"/>
+  <text x="820" y="160" text-anchor="middle" font-size="11" font-weight="700" fill="#DC2626">Problem &amp;</text>
+  <text x="820" y="174" text-anchor="middle" font-size="11" font-weight="700" fill="#DC2626">Solution Scope</text>
+
+  <!-- Diamond 3 (faded) — Delivery Management territory -->
+  <text x="920" y="76" text-anchor="middle" font-size="11" font-weight="700" fill="#94A3B8" letter-spacing="1.2">DELIVERY MGMT</text>
+  <polygon points="840,200 920,140 1000,200 920,260" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <text x="920" y="200" text-anchor="middle" font-size="11" font-weight="700" fill="#64748B">Delivery</text>
+  <text x="920" y="216" text-anchor="middle" font-size="9" font-style="italic" fill="#94A3B8">(handover)</text>
+
+  <!-- Agent badges below each phase half -->
+  <g font-size="10.5" font-weight="600">
+    <!-- Problem Discovery (live) -->
+    <g transform="translate(40,318)">
+      <rect width="180" height="22" rx="11" fill="#fff" stroke="#60A5FA" stroke-width="1.5"/>
+      <text x="90" y="15" text-anchor="middle" fill="#1E40AF">🔍 Discovery Agent</text>
+    </g>
+    <g transform="translate(40,344)">
+      <rect width="180" height="22" rx="11" fill="#fff" stroke="#60A5FA" stroke-width="1.5"/>
+      <text x="90" y="15" text-anchor="middle" fill="#1E40AF">🎯 Recruitment Agent</text>
+    </g>
+    <g transform="translate(40,370)">
+      <rect width="180" height="22" rx="11" fill="#fff" stroke="#60A5FA" stroke-width="1.5"/>
+      <text x="90" y="15" text-anchor="middle" fill="#1E40AF">💡 Opportunity Agent</text>
+    </g>
+
+    <!-- Problem Definition (coming) -->
+    <g transform="translate(220,318)">
+      <rect width="180" height="22" rx="11" fill="#F8FAFC" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="90" y="15" text-anchor="middle" fill="#3B82F6">🧠 Validation Agent</text>
+    </g>
+    <g transform="translate(220,344)">
+      <rect width="180" height="22" rx="11" fill="#F8FAFC" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="90" y="15" text-anchor="middle" fill="#3B82F6">📋 Pitch Agent</text>
+    </g>
+
+    <!-- Solution Discovery (coming) -->
+    <g transform="translate(440,318)">
+      <rect width="180" height="22" rx="11" fill="#F8FAFC" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="90" y="15" text-anchor="middle" fill="#2563EB">🤖 Prototyping Agent</text>
+    </g>
+
+    <!-- Solution Definition (coming) -->
+    <g transform="translate(620,318)">
+      <rect width="180" height="22" rx="11" fill="#F8FAFC" stroke="#1D4ED8" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="90" y="15" text-anchor="middle" fill="#1D4ED8">🧪 Validation Agent</text>
+    </g>
+    <g transform="translate(620,344)">
+      <rect width="180" height="22" rx="11" fill="#F8FAFC" stroke="#1D4ED8" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="90" y="15" text-anchor="middle" fill="#1D4ED8">🔄 Iteration Agent</text>
+    </g>
+
+    <!-- Solution Agent on Scope gate -->
+    <g transform="translate(750,272)">
+      <rect width="140" height="22" rx="11" fill="#F8FAFC" stroke="#1E40AF" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="70" y="15" text-anchor="middle" fill="#1E40AF">✅ Solution Agent</text>
+    </g>
+  </g>
+
+  <!-- Closing the Loop arrow — over the top, from Delivery back into Problem Discovery -->
+  <text x="500" y="16" text-anchor="middle" font-size="11" font-style="italic" fill="#64748B">Closing the Loop · learnings route back into Problem Discovery</text>
+  <path d="M 920,140 Q 920,32 500,32 Q 80,32 130,90" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#loop-arrow)"/>
+</svg>`;
+}
+
+function phaseCard(o) {
+  return `
+    <div class="phase-card">
+      <div class="phase-card-header" style="background:${o.color}">
+        <span class="pc-num">${o.num}</span>
+        <h4>${o.name}</h4>
+        <span class="pc-tag">${o.tag}</span>
+      </div>
+      <div class="phase-card-body">
+        <p class="what-ux"><strong>UX/PM does:</strong> ${o.uxDoes}</p>
+        <div class="phase-agents">
+          ${o.agents.map(a => `
+            <div class="phase-agent ${a.live?'':'coming-soon'}">
+              <span class="pa-icon">${a.icon}</span>
+              <div class="pa-body">
+                <div class="pa-name">${a.name} <span class="pa-badge ${a.live?'live':''}">${a.live?'Live':'Coming soon'}</span></div>
+                <p class="pa-desc">${a.desc}</p>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderLanding() {
+  return `
+    <div class="landing">
+      <div class="landing-hero">
+        <h2>Discovery Management Agents</h2>
+        <p class="lede">
+          A set of AI agents that support the UX/PM workflow at every phase of
+          <a href="https://e-conomic.slite.com/app/docs/aeGaHgxkEU6NGi" target="_blank">Discovery Management</a> — the triple-diamond model that vets what's worth solving <em>before</em> a team commits to building it. Each agent automates the connective tissue between Slite, Dovetail, Airtable, Tableau, and the web — so UXers and PMs stay focused on judgement, not glue work.
+        </p>
+      </div>
+
+      <div class="diamond-illustration">${tripleDiamondSVG()}</div>
+
+      <h3 class="section-h">How agents support each phase</h3>
+
+      <div class="phase-cards">
+        ${phaseCard({
+          color:'var(--pd)', num:'PHASE 1', name:'Problem Discovery', tag:'UX-led · continuous',
+          uxDoes:'Customer interviews, behavioural data (Kubit, Datadog), support &amp; feedback signal, JTBD &amp; journey mapping. Captures research questions in the per-JTBD <strong>Discovery Backlog</strong> and candidate opportunities in the <strong>Opportunity Backlog</strong>.',
+          agents:[
+            {icon:'🔍', name:'Discovery Agent', live:true, desc:'Gathers evidence from Slite, Dovetail, Airtable, the web (competitors + industry), and best-practice frameworks. Returns a unified "This is what I can tell you about your question" answer — and only suggests creating a new discovery item when meaningful gaps remain.'},
+            {icon:'🎯', name:'Recruitment Agent', live:true, desc:'Takes a discovery brief and returns 8–12 ranked candidates from Airtable feedback, the User Panel, and Tableau NPS — split into primary and contrast segments, with a recruitment email ready to send.'},
+            {icon:'💡', name:'Opportunity Agent', live:true, desc:'Reads a discovery brief plus every sub-document (interview snapshots, transcripts, syntheses) and writes a Teresa-Torres-style opportunity statement — grounded in evidence, positioned in the Opportunity Solution Tree, added to the JTBD Opportunity Backlog with Interview Snapshots per participant.'}
+          ]
+        })}
+
+        ${phaseCard({
+          color:'var(--pdef)', num:'PHASES 2–3', name:'Problem Definition → Pitch', tag:'first commitment gate',
+          uxDoes:'Pressure-tests opportunities for desirability, viability, and feasibility. Drafts the <strong>Pitch</strong> with the metric ladder (north star → Mission outcome → pitch-level metric) and brings it to the bi-weekly UX Manager + Product Lead alignment.',
+          agents:[
+            {icon:'🧠', name:'Validation Agent', live:false, desc:'Designs lightweight desirability tests, frames the viability hypothesis with the PM, surfaces feasibility constraints with the Team Lead — and recommends go / watch / park for promoting the opportunity into a Pitch.'},
+            {icon:'📋', name:'Pitch Agent', live:false, desc:'Reads the validated opportunity + parent JTBD/Mission, drafts the Pitch using Template v3.0 with all five sections (Problem, Value, Evidence, Success, Sizing) and the explicit metric ladder. Saves to the Pitches collection ready for the bi-weekly review.'}
+          ]
+        })}
+
+        ${phaseCard({
+          color:'var(--sd)', num:'PHASE 4', name:'Solution Discovery', tag:'diverge on alternatives',
+          uxDoes:'Generates solution alternatives from the approved Pitch, draws on design-system patterns, runs the Trio trade-off review on prototype variants before converging.',
+          agents:[
+            {icon:'🤖', name:'Prototyping Agent', live:false, desc:'Traces Pitch → opportunity → JTBD → Mission to build context, then generates 2–3 prototype variants as single-file HTML apps using real @economic/taco components. Can also produce wireframes via Figma MCP.'}
+          ]
+        })}
+
+        ${phaseCard({
+          color:'var(--sdef)', num:'PHASE 5', name:'Solution Definition', tag:'converge with users',
+          uxDoes:'Tests solution-problem fit with real users on the prototype variants, decides promote / watch / park, refines the chosen direction.',
+          agents:[
+            {icon:'🧪', name:'Validation Agent', live:false, desc:'Structures the solution-problem fit test — test plan, participant criteria from JTBD segments, feedback templates — and synthesises evidence into a promote / watch / park recommendation.'},
+            {icon:'🔄', name:'Iteration Agent', live:false, desc:'Feeds validation learnings back into the design brief, then asks the Prototyping Agent to produce refined variants. Compares new vs. previous against evidence so the chosen direction keeps improving.'}
+          ]
+        })}
+
+        ${phaseCard({
+          color:'var(--scope)', num:'PHASE 6', name:'Problem & Solution Scope', tag:'second commitment gate · handover to Delivery',
+          uxDoes:'Co-owns the Problem Scope (with the PM) and the Solution Scope (with the Team Lead). Locks the scope artefact that Delivery Management builds and ships.',
+          agents:[
+            {icon:'✅', name:'Solution Agent', live:false, desc:'Packages the validated direction into a delivery-ready Problem &amp; Solution Scope — interaction states, exact @economic/taco component mappings with props, tokens, edge cases, and a validation summary with customer evidence and confidence scores.'}
+          ]
+        })}
+
+        <div class="phase-card">
+          <div class="phase-card-header" style="background:var(--loop)">
+            <span class="pc-num">PHASE 7</span>
+            <h4>Closing the Loop</h4>
+            <span class="pc-tag">post-release outcome read</span>
+          </div>
+          <div class="phase-card-body">
+            <p class="what-ux"><strong>PM does:</strong> compares the shipped solution's actual outcome to the Pitch's predicted outcome, harvests qualitative learnings with UX, routes both back into the Discovery and Opportunity Backlogs.</p>
+            <p class="what-ux" style="font-style:italic;color:var(--dim);margin-bottom:0;">No agent yet — this phase will likely gain an Outcome Agent that diffs predicted vs. actual metrics and drafts the JTBD update.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="landing-footer">
+        Framework adapted from <a href="https://e-conomic.slite.com/app/docs/aeGaHgxkEU6NGi" target="_blank">Discovery Management</a> in Slite. <strong>UX Designers</strong> drive Phases 1, 2, 4, 5 · <strong>UX Managers + Product Leads</strong> steer the Pitch gate · <strong>Product Trio + Team Lead</strong> co-own Phase 6 · <strong>PMs</strong> own the outcome read in Phase 7.
+      </p>
+    </div>
   `;
 }
 
@@ -1330,9 +1583,6 @@ renderAccordions();
 renderMain();
 bindInputValidation();
 
-// Set header height for layout calc
-const hdr = document.querySelector('.header');
-document.documentElement.style.setProperty('--header-h', hdr.offsetHeight + 'px');
 </script>
 </body>
 </html>
