@@ -210,6 +210,25 @@ textarea{min-height:120px;}
 ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px;}
 
 @media(max-width:900px){.header,.main-content{padding-left:20px;padding-right:20px;}.sidebar{border-right:none;border-bottom:1px solid var(--border);padding:8px 0;}.layout{min-height:auto;}}
+
+/* Deploy modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:1000;padding:24px;}
+.modal-backdrop.open{display:flex;}
+.modal-dialog{background:#fff;border-radius:16px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;animation:modal-in .18s ease-out;}
+@keyframes modal-in{from{opacity:0;transform:translateY(8px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+.modal-header{padding:22px 24px 0;}
+.modal-header .modal-icon{font-size:30px;display:block;margin-bottom:6px;}
+.modal-header h3{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.2px;}
+.modal-body{padding:12px 24px 0;font-size:13px;color:var(--muted);line-height:1.6;}
+.modal-body ol{padding-left:20px;margin:10px 0;}
+.modal-body ol li{margin-bottom:6px;}
+.modal-body ol li strong{color:var(--text);}
+.modal-body kbd{background:rgba(0,0,0,.06);padding:2px 7px;border-radius:4px;font-size:11px;font-family:inherit;font-weight:600;color:var(--text);border:1px solid rgba(0,0,0,.08);}
+.modal-body .modal-tip{margin-top:10px;font-size:12px;color:var(--dim);}
+.modal-footer{padding:18px 24px 22px;display:flex;gap:10px;justify-content:flex-end;}
+.modal-footer .btn{padding:9px 16px;font-size:13px;border-radius:8px;font-weight:600;border:none;cursor:pointer;font-family:inherit;}
+.btn-secondary{background:#F1F5F9;color:var(--text);}
+.btn-secondary:hover{background:#E2E8F0;}
 </style>
 </head>
 <body>
@@ -243,6 +262,29 @@ textarea{min-height:120px;}
     <div id="missionAccordions"></div>
   </div>
 
+</div>
+
+<!-- Deploy modal -->
+<div class="modal-backdrop" id="deployModal" onclick="if(event.target===this)closeDeployModal()">
+  <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="deployModalTitle">
+    <div class="modal-header">
+      <h3 id="deployModalTitle">Deploy <span id="modalAgentName">Agent</span></h3>
+    </div>
+    <div class="modal-body">
+      <p>The prompt is ready. When you continue:</p>
+      <ol>
+        <li><strong>e-conomic AI will open</strong> automatically.</li>
+        <li>The prompt is <strong>copied to your clipboard</strong>.</li>
+        <li>In e-conomic AI, <strong>start a new chat</strong> (<kbd>⌘N</kbd>).</li>
+        <li><strong>Paste the prompt</strong> (<kbd>⌘V</kbd>) and send it to start the agent.</li>
+      </ol>
+      <p class="modal-tip">Tip: if the app doesn't open automatically, the prompt is still on your clipboard — open e-conomic AI manually and paste it.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeDeployModal()">Cancel</button>
+      <button class="btn btn-primary" id="modalConfirmBtn" onclick="confirmDeployModal()">🚀 Open e-conomic AI</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -922,8 +964,40 @@ function switchTab(btn, panelId) {
 function getTime() { return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
 function extractId(url) { const m=url.match(/docs\/([a-zA-Z0-9_-]+)/); return m?m[1]:url; }
 
-// Deep link to e-conomic AI desktop app
+// Deploy modal + deep link to e-conomic AI desktop app
+let pendingDeploy = null;
+
 function showResult(agentId, prompt) {
+  // Show the confirmation modal first; deploy fires only on user confirm
+  const agent = agents.find(a => a.id === agentId);
+  document.getElementById('modalAgentName').textContent = agent ? agent.name : 'Agent';
+  pendingDeploy = {agentId, prompt};
+  const modal = document.getElementById('deployModal');
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('modalConfirmBtn').focus(), 0);
+}
+
+function closeDeployModal() {
+  document.getElementById('deployModal').classList.remove('open');
+  pendingDeploy = null;
+}
+
+function confirmDeployModal() {
+  if(!pendingDeploy) return;
+  const {agentId, prompt} = pendingDeploy;
+  document.getElementById('deployModal').classList.remove('open');
+  pendingDeploy = null;
+  performDeploy(agentId, prompt);
+}
+
+// Close modal on Escape
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && document.getElementById('deployModal').classList.contains('open')) {
+    closeDeployModal();
+  }
+});
+
+function performDeploy(agentId, prompt) {
   const area = document.getElementById('resultArea-'+agentId);
   area.classList.add('visible');
   area.innerHTML = `
@@ -938,7 +1012,7 @@ function showResult(agentId, prompt) {
       </div>
     </details>
   `;
-  // Auto-launch e-conomic AI
+  // Launch e-conomic AI (copies to clipboard + deep link)
   launchEcoAIWithPrompt(prompt);
 }
 function launchEcoAIWithPrompt(prompt) {
